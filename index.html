@@ -1,0 +1,2760 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="어젯밤 성의 서고에서 기밀 문서가 사라졌다. 다섯 사람 중 하나가 첩자다. 심문으로 첩자를 가려내는 추리 게임.">
+<meta name="color-scheme" content="dark">
+<title>서고의 밤</title>
+<style>
+:root{
+  /* 이 페이지는 의도적으로 어두운 단일 테마다. 이렇게 선언해 두면 브라우저의
+     자동 다크모드가 페이지를 한 번 더 뒤집지 않는다. */
+  color-scheme:dark;
+  --stone-900:#0F1418; --stone-850:#131A20; --stone-800:#171E24; --stone-750:#1C252B;
+  --stone-700:#202A31; --line:#2C3A43; --line-soft:#243038;
+  --text:#DCE5E9; --fog:#8FA0A9; --fog-dim:#63757E;
+  --parch:#E8E0CE; --parch-2:#DDD3BC; --parch-line:#C3B69A; --parch-ink:#2A2419; --parch-fog:#6B6250;
+  --brass:#C9922F; --brass-hi:#E4AE47; --brass-dim:#7A5C1E;
+  --ox:#9B3B32; --ox-hi:#C4544A; --ox-soft:#3A1E1B;
+  --sage:#6E8B6B;
+  --ff-disp:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Nanum Myeongjo','Batang',serif;
+  --ff-body:system-ui,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  --ff-mono:'SFMono-Regular',Consolas,'Liberation Mono',monospace;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--stone-900); color:var(--text); font-family:var(--ff-body); font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0; font-family:var(--ff-disp); font-weight:600; text-wrap:balance}
+button{font-family:inherit; font-size:inherit; color:inherit; cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--brass-hi); outline-offset:2px}
+.mono{font-family:var(--ff-mono); font-variant-numeric:tabular-nums}
+.lbl{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--fog-dim); font-family:var(--ff-mono)}
+
+header{display:flex; align-items:center; gap:20px; flex-wrap:wrap; padding:12px 20px; background:var(--stone-850); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20}
+.brand{display:flex; align-items:baseline; gap:10px}
+.brand h1{font-size:20px; letter-spacing:.02em}
+.brand .sub{font-size:11px; color:var(--fog-dim)}
+.hstat{display:flex; gap:18px; margin-left:auto; align-items:center; flex-wrap:wrap}
+.stat{display:flex; flex-direction:column; gap:1px}
+.stat .v{font-family:var(--ff-mono); font-size:15px; color:var(--brass-hi)}
+.stat .v.warn{color:var(--ox-hi)}
+.btn{background:var(--stone-700); border:1px solid var(--line); border-radius:2px; padding:7px 14px; letter-spacing:.02em}
+.btn:hover{background:var(--stone-750); border-color:var(--brass-dim)}
+.btn-key{background:var(--brass); color:#1A1206; border-color:var(--brass); font-weight:600}
+.btn-key:hover{background:var(--brass-hi); border-color:var(--brass-hi)}
+
+main{display:grid; grid-template-columns:270px minmax(0,1fr) minmax(0,392px); gap:1px; background:var(--line-soft); min-height:calc(100vh - 53px)}
+.col{background:var(--stone-900); padding:16px; display:flex; flex-direction:column; gap:15px; min-width:0}
+.col.board{background:var(--stone-850)}
+.panel{border:1px solid var(--line); background:var(--stone-800)}
+.panel > .ph{padding:8px 11px; border-bottom:1px solid var(--line); background:var(--stone-750); display:flex; align-items:center; gap:8px}
+.panel > .pb{padding:11px}
+
+.plan{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line-soft)}
+.room{background:var(--stone-750); padding:7px 8px; min-height:58px}
+.room .rn{font-family:var(--ff-disp); font-size:12px; color:var(--fog)}
+.room.archive{background:#1E2126; box-shadow:inset 0 0 0 1px var(--brass-dim)}
+.room.archive .rn{color:var(--brass)}
+.chips{display:flex; flex-wrap:wrap; gap:3px; margin-top:5px}
+.chip{font-size:10px; padding:1px 5px; border-radius:9px; background:var(--stone-900); border:1px solid var(--line)}
+
+.who{width:100%; text-align:left; background:var(--stone-800); border:1px solid var(--line); border-radius:2px; padding:7px 10px; display:flex; flex-direction:column; gap:5px}
+.who:hover{border-color:var(--brass-dim)}
+.who.on{border-color:var(--brass); background:var(--stone-750)}
+.who .l1{display:flex; align-items:baseline; gap:6px}
+.who .nm{font-family:var(--ff-disp); font-size:15px}
+.who .jb{font-size:10px; color:var(--fog-dim)}
+.who .st{margin-left:auto; font-size:10px; font-family:var(--ff-mono); color:var(--fog-dim)}
+.bar{height:3px; background:var(--stone-900); border:1px solid var(--line-soft); position:relative}
+.bar i{position:absolute; inset:0 auto 0 0; background:var(--sage)}
+.bar i.mid{background:var(--brass)}
+.bar i.hot{background:var(--ox)}
+.who.shut{opacity:.6}
+.who.shut .nm::after{content:' · 침묵'; font-size:10px; color:var(--ox-hi); font-family:var(--ff-body)}
+.roster{display:flex; flex-direction:column; gap:6px}
+
+.card-id{border:1px solid var(--line); background:var(--stone-800); border-top:2px solid var(--brass-dim)}
+.card-id .cih{padding:9px 12px; border-bottom:1px solid var(--line)}
+.card-id .cin{font-family:var(--ff-disp); font-size:17px}
+.card-id .cij{font-size:11px; color:var(--fog-dim)}
+.prof{padding:9px 12px 11px; display:flex; flex-direction:column; gap:7px}
+.prow{display:grid; grid-template-columns:44px 1fr; gap:9px; font-size:12px; line-height:1.5}
+.pk{font-size:10px; letter-spacing:.08em; color:var(--brass-dim); font-family:var(--ff-mono); padding-top:2px}
+.pv{color:var(--fog)}
+.prow:last-child .pv{color:var(--text); font-style:italic}
+
+.talkwrap{display:flex; flex-direction:column; gap:11px; flex:1; min-height:0}
+.brief{border-left:2px solid var(--brass-dim); padding:2px 0 2px 12px; color:var(--fog); font-size:13px}
+.brief b{color:var(--text); font-weight:600}
+.log{flex:1; overflow-y:auto; min-height:250px; max-height:48vh; display:flex; flex-direction:column; gap:10px; padding-right:4px}
+.msg{max-width:88%}
+.msg .src{font-family:var(--ff-disp); font-size:12px; color:var(--brass); margin-bottom:2px}
+.msg .bd{background:var(--stone-800); border:1px solid var(--line); border-left:2px solid var(--brass-dim); padding:8px 11px; white-space:pre-wrap}
+.msg.me{margin-left:auto}
+.msg.me .src{color:var(--fog); text-align:right}
+.msg.me .bd{background:var(--stone-750); border-left:1px solid var(--line); border-right:2px solid var(--fog-dim)}
+.msg.sys{max-width:100%}
+.msg.sys .bd{background:transparent; border:none; border-left:2px solid var(--line); color:var(--fog-dim); font-size:12px; padding:2px 0 2px 10px}
+.inputrow{display:flex; gap:7px}
+.inputrow input{flex:1; min-width:0; background:var(--stone-800); border:1px solid var(--line); color:var(--text); padding:9px 11px; border-radius:2px; font-size:14px; font-family:inherit}
+.inputrow input::placeholder{color:var(--fog-dim)}
+.hints{display:flex; gap:5px; flex-wrap:wrap}
+.hint{background:transparent; border:1px dashed var(--line); border-radius:2px; padding:3px 8px; font-size:11px; color:var(--fog-dim)}
+.hint:hover{border-color:var(--brass-dim); border-style:solid; color:var(--brass)}
+.parse{font-size:11px; color:var(--fog-dim); font-family:var(--ff-mono); display:flex; gap:14px; flex-wrap:wrap}
+.parse b{color:var(--brass-dim); font-weight:400}
+.parse .miss{color:var(--ox-hi)}
+
+/* 증언판은 페이지에서 유일한 밝은 표면이다. 본문 글자색(거의 흰색)이 상속되거나
+   브라우저 강제 다크모드가 글자만 뒤집는 일이 없도록, 색을 상속에 맡기지 않고 못 박는다.
+   아래 muted 규칙들은 이 규칙보다 뒤에 있으므로 그대로 이긴다. */
+.bwrap{background:#E8E0CE; border:1px solid #C3B69A; color-scheme:light; forced-color-adjust:none}
+.bwrap,.bwrap *{color:#2A2419}
+.bwrap .bh{padding:9px 12px; border-bottom:1px solid #C3B69A; background:#DDD3BC; display:flex; align-items:center; gap:8px}
+.bwrap .bh h3{font-size:14px}
+.bwrap .bh .lbl{color:#6B6250}
+.bscroll{overflow-x:auto}
+table.bd{border-collapse:collapse; width:100%; font-size:11px}
+table.bd th,table.bd td{border:1px solid #C3B69A; padding:3px 4px; vertical-align:top}
+table.bd thead th{background:#DDD3BC; font-family:var(--ff-mono); font-size:10px; font-weight:500; color:#6B6250}
+table.bd th.nm{text-align:left; font-family:var(--ff-disp); font-size:12px; white-space:nowrap; background:#DDD3BC}
+td.cell{min-width:50px; height:32px}
+td.cell.conflict{background:#EFD4CF; box-shadow:inset 0 0 0 1px #9B3B32}
+td.cell.settled{background:#DFE6D8}
+.cl{display:block; white-space:nowrap; font-size:10px; line-height:1.5}
+.cl s{color:#6B6250}
+.cl .mk{font-family:var(--ff-mono); color:#6B6250}
+.cl.doubt{color:#6B6250; font-style:italic}
+.blegend{padding:8px 12px; border-top:1px solid #C3B69A; font-size:10px; color:#6B6250; display:flex; gap:11px; flex-wrap:wrap}
+.vague{padding:9px 12px; border-top:1px solid #C3B69A; font-size:11px; color:#6B6250}
+.vague b{color:#2A2419}
+.feed{font-size:11px; color:var(--fog-dim); display:flex; flex-direction:column; gap:4px; max-height:132px; overflow-y:auto}
+.feed span{border-left:1px solid var(--line); padding-left:8px}
+.rules{font-size:12px; color:var(--fog); display:flex; flex-direction:column; gap:6px}
+.rules b{color:var(--text)}
+
+.scrim{position:fixed; inset:0; background:rgba(6,9,11,.82); display:flex; align-items:center; justify-content:center; padding:20px; z-index:40}
+.scrim[hidden]{display:none}
+.modal{background:var(--stone-850); border:1px solid var(--line); max-width:640px; width:100%; max-height:88vh; overflow-y:auto}
+.modal .mh{padding:14px 18px; border-bottom:1px solid var(--line); background:var(--stone-800)}
+.modal .mb{padding:18px; display:flex; flex-direction:column; gap:14px}
+.fld{display:flex; flex-direction:column; gap:5px}
+.istep{display:flex; flex-direction:column; gap:3px}
+.ieye{font-size:11px; letter-spacing:.16em; color:var(--brass-dim); font-family:var(--ff-mono)}
+.ihead{font-family:var(--ff-disp); font-size:19px; color:var(--text); line-height:1.3}
+.ibody{font-size:13px; color:var(--fog); line-height:1.65}
+.ibody b{color:var(--text); font-weight:600}
+.modal .mh h2{font-size:24px}
+.modal .mb{gap:20px}
+select{background:var(--stone-800); color:var(--text); border:1px solid var(--line); border-radius:2px; padding:6px 8px; font-size:13px; max-width:100%}
+.mf{display:flex; gap:10px; justify-content:flex-end; padding:0 18px 18px}
+.verdict{font-family:var(--ff-disp); font-size:26px}
+.verdict.win{color:var(--brass-hi)}
+.verdict.lose{color:var(--ox-hi)}
+table.rev{border-collapse:collapse; width:100%; font-size:11px}
+table.rev th,table.rev td{border:1px solid var(--line); padding:3px 5px; text-align:left}
+table.rev thead th{background:var(--stone-800); font-family:var(--ff-mono); font-size:10px; color:var(--fog-dim)}
+table.rev td.hit{background:var(--ox-soft); color:var(--ox-hi)}
+table.rev th.nm{font-family:var(--ff-disp); font-size:12px; white-space:nowrap}
+.roles{display:flex; flex-direction:column; gap:4px; font-size:12px}
+.roles b{font-family:var(--ff-disp); color:var(--brass)}
+.cost{font-size:11px; color:var(--fog-dim)}
+
+details.notes{border-top:1px solid var(--line); background:var(--stone-850)}
+details.notes summary{padding:12px 20px; cursor:pointer; color:var(--fog); font-size:12px}
+details.notes .nb{padding:0 20px 20px; max-width:920px; display:flex; flex-direction:column; gap:10px; font-size:12px; color:var(--fog)}
+details.notes .nb b{color:var(--text)}
+
+@media (max-width:1080px){ main{grid-template-columns:1fr} .log{max-height:none} }
+@media (prefers-reduced-motion:no-preference){
+  .msg{animation:in .18s ease-out}
+  @keyframes in{from{opacity:0; transform:translateY(3px)}to{opacity:1; transform:none}}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>서고의 밤</h1>
+    <span class="sub">자유 입력 심문 · 세계 상태는 코드가 쥔다</span>
+  </div>
+  <div class="hstat">
+    <div class="stat"><span class="lbl">시각</span><span class="v mono" id="clock">09시</span></div>
+    <div class="stat"><span class="lbl">남은 대화</span><span class="v mono" id="beats">30</span></div>
+    <div class="stat"><span class="lbl">증언 카드</span><span class="v mono" id="ncards">0</span></div>
+    <button class="btn" id="aibtn">AI</button>
+    <button class="btn" id="help">도움말</button>
+    <button class="btn" id="newgame">새 사건</button>
+    <button class="btn btn-key" id="accuse">첩자 지목 ▸</button>
+  </div>
+</header>
+
+<main>
+  <section class="col">
+    <div class="panel">
+      <div class="ph"><span class="lbl">성 도면 · 지금</span><span class="lbl" style="margin-left:auto" id="planhour"></span></div>
+      <div class="pb" style="padding:0"><div class="plan" id="plan"></div></div>
+    </div>
+    <div>
+      <div class="lbl" style="margin-bottom:7px">용의자 · 인내</div>
+      <div class="roster" id="roster"></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="lbl">낮의 마주침</span></div>
+      <div class="pb"><div class="feed" id="feed"></div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line-soft);font-size:11px;color:var(--fog-dim)">낮에도 다섯은 성 안을 돌아다닌다. 여기 함께 적힌 두 사람은 서로 마주쳤다는 뜻이다.</div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="lbl">규칙</span></div>
+      <div class="pb rules">
+        <div><b>목격은 같은 방에서만 가능하다.</b> 다른 방에 있었다면서 목격을 주장하면 그 기억은 성립하지 않는다.</div>
+        <div><b>사람마다 말하는 방식이 다르다.</b> 각자의 규칙 세 줄이 무엇을 말하고 무엇을 감추는지 결정한다.</div>
+        <div><b>같은 질문을 다시 하면 다음 이야기가 나온다.</b> 되풀이하지 않는다. 밑이 드러나면 그렇다고 말한다.</div>
+        <div><b>도면과 증언판은 공짜.</b> 시간을 쓰는 것은 말을 거는 일뿐. 18시가 지나면 첩자는 떠난다.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="col">
+    <div class="brief">
+      어젯밤 <b>서고</b>에서 기밀 문서가 사라졌다. 성에 남아 있던 다섯 사람 중 하나가 첩자다.
+      <b>21시부터 02시까지</b> 여섯 시간의 행적을 맞춰 붙여, 거짓말한 자와 그것을 본 자를 찾아라.
+    </div>
+    <div id="idcard"></div>
+    <div class="talkwrap">
+      <div class="log" id="log"></div>
+      <div class="inputrow">
+        <input id="say" type="text" autocomplete="off" placeholder="말을 건다 — 자유롭게 입력하시오">
+        <button class="btn btn-key" id="send">말한다</button>
+      </div>
+      <div class="hints" id="hints"></div>
+      <div class="parse" id="parse"></div>
+    </div>
+  </section>
+
+  <section class="col board">
+    <div class="bwrap">
+      <div class="bh"><h3>증언판</h3><span class="lbl">어젯밤 21시 – 02시</span></div>
+      <div class="bscroll"><table class="bd" id="bd"></table></div>
+      <div class="blegend">
+        <span title="본인이 그 시각 거기 있었다고 말한 것. 목격을 말하면 그 방에 있었다는 뜻이므로 함께 오른다.">● 본인 진술</span><span title="다른 사람이 그를 거기서 봤다고 말한 것.">○ 목격</span><span title="남에게 전해 들은 이야기. 옮긴 사람의 위치는 주장하지 않는다.">· 전언</span>
+        <span style="color:#9B3B32">▮ 충돌</span><span style="color:#4A6046">▮ 해명됨</span>
+      </div>
+      <div class="vague" id="vague" hidden></div>
+    </div>
+  </section>
+</main>
+
+<details class="notes">
+  <summary>설계 노트 — 대화는 열려 있고 사실은 잠겨 있다</summary>
+  <div class="nb">
+    <div><b>입력단과 출력단에 각각 다른 실패가 있다.</b> Portopia(2023)는 자유 입력을 해석하지 못해 무너졌고(긍정 9–15%), Vaudeville은 LLM에 사실을 맡겨 추리가 무너졌다(48%). 그래서 <b>해석은 열고, 사실은 표에 잠근다.</b> 이 빌드의 해석기는 LLM 없는 키워드 매처이고, LLM을 붙일 자리는 두 곳뿐이다 — 문장을 7개 행위로 분류하는 곳, 그리고 표에서 나온 결과를 인물 말투로 렌더하는 곳. 어느 쪽도 사실 테이블에 쓰지 못한다.</div>
+    <div><b>Façade는 문장→행위 매핑에 규칙 6,800개를 썼다.</b> 그 자리가 원래 가장 비싼 자리다. 지금은 그 자리를 모델이 대신할 수 있다. 반대로 Vaudeville이 모델에 맡긴 자리는 표가 쥐어야 한다.</div>
+    <div><b>인물의 규칙 세 줄은 장식이 아니라 코드다.</b> 카일은 전언을 옮기지 않고, 하웰은 한 번에 하나만 말하며 기억이 흐려지지 않고, 벤은 들은 이야기를 출처 없이 옮긴다. 화면에 그대로 적어 두었으니 플레이어는 규칙을 이용해 질문을 설계할 수 있다.</div>
+    <div><b>되풀이는 회피가 아니라 기계로 처리한다.</b> 같은 질문을 다시 하면 아직 말하지 않은 행이 나오고, 다 떨어지면 그렇게 말한다. 자유 입력이므로 이 주장은 이제 실제로 시험할 수 있다.</div>
+    <div><b>여전히 게임으로 돌린 문제 —</b> 생성된 허구를 사실과 구별하는 문제는 해결하지 않았다. LLM에 쓰기 권한을 주지 않아 회피했고, 첩자가 심는 거짓 기억은 생성물이 아니라 저작물이다.</div>
+  </div>
+</details>
+
+<div class="scrim" id="scrim" hidden><div class="modal" id="modal"></div></div>
+
+<script>
+"use strict";
+/* ══════════════════════════════════════════════════════════════════
+   서고의 밤 — 한 파일. 아래가 한 턴이 지나는 길이다.
+   파일 순서가 곧 이 순서다. 번호를 따라 내려가면 된다.
+
+     ⓪ 장면과 호칭   scene · address      누가 어디서, 부르는 이름과 주어를 가른다
+     ① 해석          parse · interpret    무슨 행위인지, 어떤 슬롯이 들어 있는지
+     ② 맥락 복원     resolve              생략된 시각·장소를 되살린다. 낡았으면 되묻는다
+     ③ 앎의 경계     boundary             말할 수 없는 것과 말하지 않기로 한 것
+     ④ 검색과 차감   retrieve · subtract  기억에서 꺼내고, 이미 말한 것은 뺀다
+     ⑤ 내용 계획     planTurn             무엇을 몇 개나 말할지 (성격과 신뢰가 정한다)
+     ⑥ 표현          realize              인물의 말투로 문장을 만든다
+     ⑦ 기록          commit               증언판과 공통 기반에 올린다
+
+   층의 순서는 talkOne() 하나에 적혀 있다. 순서가 곧 규칙이다.
+   사실은 ④~⑦ 에서만 나온다. 모델은 ①(알아듣기)과 ⑥(말하기)에만 닿는다.
+   ══════════════════════════════════════════════════════════════════ */
+/* ════════════════ 세계 ════════════════ */
+const ROOMS=[{id:'archive',ko:'서고'},{id:'court',ko:'안뜰'},{id:'kitchen',ko:'부엌'},
+             {id:'gate',ko:'동문 초소'},{id:'yard',ko:'뒷마당'},{id:'quarters',ko:'숙소'}];
+const RKO=Object.fromEntries(ROOMS.map(r=>[r.id,r.ko]));
+const HOURS=['21시','22시','23시','00시','01시','02시'];
+
+/* ════════════════ 인물 ════════════════
+   규칙 세 줄은 모두 아래 trait 로 코드에 묶여 있다. 화면에도 그대로 보여준다. */
+const NPCS=[
+{ id:'kyle', ko:'카일', job:'경비병 · 40대', lim:55, budget:2, sort:'hour',
+  rules:['직접 본 것만 말한다. 전해 들은 이야기는 옮기지 않는다.',
+         '정중히 물으면 답한다. 몰아붙이면 그 자리에서 입을 닫는다.',
+         '미라를 믿지 않는다. 미라에 대해서는 따로 묻지 않으면 말하지 않는다.'],
+  profile:[["사람됨", "규율에 사는 사람. 제 두 눈으로 본 것만 사실로 친다."], ["관계", "지난달 은식기 사건 이후로 미라를 대하는 눈이 달라졌다."], ["습관", "동문 초소를 지킨다. 밤새 자리를 떴다는 말은 듣기 싫어한다."], ["그날 밤", "“초소는 조용했소. 그뿐이오.”"]],
+  lore:{me:"규율대로 사는 사람이오. 본 것만 사실로 치오.",
+        work:"문을 여닫고 밤을 지키는 것이 내 일이오.",
+        years:"열두 해째요. 그 전엔 국경에 있었소.",
+        home:"북쪽 마을 출신이오. 이제 돌아갈 일도 없소.",
+        likes:"술은 근무가 끝난 뒤에만. 그 외엔 별 재미가 없소.",
+        habit:"말수가 적소. 같은 말을 두 번 하는 걸 싫어하오.",
+        now:"요즘 성 안이 어수선하오. 달갑지 않소."},
+  style:{"order": "hour", "frame": "justify", "offer": "none", "smalltalk":"flat", "disclosure":"guarded", "ref": "reluctant"},
+  reason:{"distrust": "지난달 은식기가 사라졌을 때 나는 미라를 지목했소. 아직 거두지 않았소.", "hearsay": "들은 얘기만 믿고 사람을 잡을 뻔한 적이 있소. 두 번은 안 하오.", "scope": "나는 어젯밤 일만 답하겠소."},
+  t:{noHearsay:true, pressMult:2.2, withhold:'mira'},
+  night:['gate','gate','court','gate','gate','quarters'],
+  secret:'초소를 비우고 잠깐 눈을 붙였소. 밝혀지면 목이 날아가오.',
+  v:{ loc:(sp,r)=>sp+' '+r+'에 있었소.',
+      saw:(sp,r,w)=>sp+' '+r+'에서 '+EUL(w)+' 봤소.',
+      hazy:(sp,r)=>sp+' '+r+'에 인적이 있었소. 얼굴은 못 봤소.',
+      blank:sp=>sp+' 일은 기억에 없소.',
+      none:'아무도 못 봤소. 초소는 조용했소.',
+      empty:(sp,r)=>sp+' '+r+'은 비어 있었소.',
+      nada:w=>EUN(w)+' 내 알 바가 아니오.',
+      selfq:'나 말이오?',
+      dry:'그 얘긴 아까 다 했소. 더 보탤 게 없소.',
+      shut:'…이만하겠소.',
+      deny:'그런 증언은 없소. 누가 그런 말을 하오?',
+      small:'나는 어젯밤 일만 답하겠소. 그것을 물으시오.',
+      calm:'…염려해 줘서 고맙소.',
+      press:'…그런 식으로 물으면 답하지 않겠소.',
+      recall:'…그러고 보니 하나 더 있소.',
+      ask:'언제 말이오? 분명히 말해 주시오.',
+      notw:(sp,r,mine)=>sp+' 나는 '+mine+'에 있었소. '+r+'은 보지 못했소.',
+      nohear:'그건 내가 본 게 아니라 들은 얘기요. 옮기지 않겠소.',
+      distrust:w=>'…'+w+' 얘기는 달갑지 않소만.',
+      corro:w=>'그건 나도 봤소.',
+      also:w=>w+'도 봤소.',
+      onlywho:w=>EUL(w)+' 봤소.',
+      sawT:(sp,w)=>sp+' '+EUL(w)+' 봤소.',
+      askR:'어디 말이오?',
+      askP:'누구 말이오?',
+      frameL:"내가 본 것만 말하겠소 — ",
+      again:"아까 말했잖소.",
+      yieldL:"…좋소. 이번 한 번만이오.",
+      greet:"…경비병 카일이오.",
+      ackAsk:"어젯밤 일 말이오?",
+      yes:"그렇소.",
+      whyAsk:"…그건 왜 묻소? 나는 어젯밤 일을 답하러 온 것이오.",
+      rebuke:"…말이 지나치오. 그런 말을 들으며 답할 이유는 없소.",
+      no:"아니오.",
+      foldWhy:"…내가 초소를 비웠던 걸 그이가 알고 있소. 그것만은 덮어야 했소.",
+      greet2:"…또 뵙는군.",
+      thanks:"…별말씀을.",
+      sv:{"relQ": " 말이오? ", "acks": ["그렇소.", "…그렇구려.", "음. 그렇소.", "…그렇소이다.", "그런 셈이오.", "…음."], "mood": "…긴 밤이었소. 그뿐이오.", "hypo": "가정은 하지 않소. 나는 본 것만 믿소.", "redirect": "물을 것이 있으면 어젯밤 일을 물으시오.", "relN": "…좋아하지 않소.", "relP": "믿을 만한 사람이오.", "relZ": "특별할 것 없소."},
+      nowhy:"까닭까지 말할 것은 없소. 나는 있었던 일만 말하오.",
+      fold:(mine,claim,spy)=>'…그 시각 나는 '+mine+'에 있었소. '+claim+'에서 봤다는 건 거짓이오. …'+IGA(spy)+' 그리 말해 달라 했소.',
+      confirm:(n)=>n>1?'그렇소. 둘 다 맞소.':'그렇소. 맞소.',
+      openCold:"…또 무슨 일이오.",
+      openWarm:"…무엇이든 물으시오.",
+      suspect:(w,h,c,sa)=>IGA(w)+' 수상하오. '+h+'에 '+sa+'에서 내 눈으로 봤는데, '+c+'에 있었다 하더군.',
+      noSuspect:'아직은 누구라 말 못 하겠소.',
+      notThere:r=>'어젯밤 '+EUN(r)+' 가지 않았소. 그러니 모르오.',
+      shrug:'그게 무슨 문제라도 되오?',
+      revise:'…아, 그거. 잠깐 바람을 쐬러 나갔소. 말할 일이 아니라 여겼지.',
+      lock:'그 이상은 말할 수 없소.',
+      admit:s=>'…그렇소. '+s,
+      doubt:(mine,seen)=>'그때 나는 '+mine+'에 있었소. …'+EUL(seen)+' 봤다니, 그럴 수가 없군. 봤다고 여겼는데 어떻게 봤는지는 모르겠소.' } },
+
+{ id:'mira', ko:'미라', job:'시녀 · 20대', lim:45, budget:2, sort:'hour',
+  rules:['겁이 많다. 몰아붙이면 말이 끊기고 아무것도 나오지 않는다.',
+         '안심시켜 주면 인내가 가라앉고, 숨긴 것을 하나 내놓는다.',
+         '제 비밀은 절대 먼저 말하지 않는다.'],
+  profile:[["사람됨", "겁이 많다. 다그치면 입이 얼어붙고, 다독이면 조금씩 나온다."], ["관계", "은식기 사건 이야기가 나오면 눈을 내리깐다."], ["습관", "밤에도 빨래와 촛불을 챙긴다. 뒷마당을 자주 드나든다."], ["그날 밤", "“저는… 아무것도 못 봤어요.”"]],
+  lore:{me:"저는… 눈에 안 띄는 게 편해요.",
+        work:"빨래하고 촛불 갈고… 손이 쉴 틈이 없어요.",
+        years:"여섯 해쯤 됐어요. 열넷에 들어왔어요.",
+        home:"남쪽이요. 어머니가 계셨는데… 소식은 몰라요.",
+        likes:"밤하늘 보는 거요. 그게 다예요.",
+        habit:"말끝을 흐려요. 다그치면 아무 말도 못 해요.",
+        now:"요즘은 밤에 복도 지나는 게 무서워요."},
+  style:{"order": "hour", "frame": "hedge", "offer": "none", "smalltalk":"warm", "disclosure":"measured", "ref": "eager"},
+  reason:{"calm": "그때 아무도 제 말을 믿어 주지 않았어요. 그래서 무서워요.", "scope": "저는 어젯밤 일밖엔 아는 게 없어요."},
+  t:{pressMult:2.6, reassurable:true, pressBlocks:true},
+  night:['kitchen','kitchen','yard','yard','kitchen','quarters'],
+  secret:'뒷마당에서… 사람을 만나고 있었어요. 문서와는 아무 상관 없어요.',
+  v:{ loc:(sp,r)=>sp+'… '+r+'에 있었어요.',
+      saw:(sp,r,w)=>sp+' '+r+'에서 '+EUL(w)+' 봤어요.',
+      hazy:(sp,r)=>sp+'… '+r+'에 누가 있었는데, 누군지는 잘…',
+      blank:sp=>sp+'은… 잘 모르겠어요.',
+      none:'아무도… 못 봤어요.',
+      empty:(sp,r)=>sp+' '+r+'엔 아무도 없었어요.',
+      nada:w=>EUN(w)+'… 저는 잘 몰라요.',
+      selfq:'저… 저요?',
+      dry:'그건 아까 말씀드렸어요. 더는 없어요…',
+      shut:'…죄송해요. 더는 못 하겠어요.',
+      deny:'그건… 아니에요. 그런 말 안 했어요.',
+      small:'저는… 어젯밤 일밖엔 아는 게 없어요.',
+      calm:'…네. 조금은 낫네요.',
+      press:'저, 그렇게… 그렇게 말씀하시면 저는…',
+      recall:'…아, 그러고 보니 하나 더 기억나요.',
+      ask:'…언제요? 잘 모르겠어요.',
+      notw:(sp,r,mine)=>sp+' 저는 '+mine+'에 있었어요. '+r+'은 못 봤어요.',
+      nohear:'…그건 들은 얘기라서요.',
+      distrust:w=>w+' 얘긴… 제가 말하기 좀…',
+      corro:w=>'…저도 봤어요.',
+      also:w=>w+'도 봤어요.',
+      onlywho:w=>EUL(w)+' 봤어요.',
+      sawT:(sp,w)=>sp+'… '+EUL(w)+' 봤어요.',
+      askR:'…어디요?',
+      askP:'…누구 말씀이세요?',
+      frameL:" …확실친 않지만요.",
+      again:"…아까 말씀드렸잖아요.",
+      yieldL:"…알겠어요. 말할게요.",
+      greet:"아, 네… 안녕하세요.",
+      ackAsk:"어젯밤… 말씀이시죠?",
+      yes:"…네.",
+      whyAsk:"저… 그건 왜 물으시는 거예요?",
+      rebuke:"…그런 말씀은… 너무하세요. 저 그만할래요.",
+      no:"아니요…",
+      foldWhy:"제가… 뒷마당에서 누굴 만난 걸 그 사람이 봤대요. 무서웠어요.",
+      greet2:"…네, 안녕하세요.",
+      thanks:"아니에요… 저는 아무것도 한 게 없는걸요.",
+      sv:{"relQ": "요…? ", "acks": ["…네.", "아, 네…", "그러네요…", "…그렇네요.", "네… 맞아요.", "아… 네."], "mood": "…잠을 못 잤어요.", "hypo": "그런… 그런 말씀 마세요.", "redirect": "어젯밤 일이라면… 물어보세요.", "relN": "…좋아하진 않아요.", "relP": "…좋은 분이에요.", "relZ": "…잘 모르겠어요."},
+      nowhy:"그건… 그냥, 그렇게 됐어요. 이유는 없어요.",
+      fold:(mine,claim,spy)=>'…저는 '+mine+'에 있었어요. '+EUN(claim)+'… 못 봤어요. 죄송해요, '+IGA(spy)+' 그렇게 말해 달라고…',
+      confirm:(n)=>n>1?'…네. 둘 다 맞아요.':'…네, 맞아요.',
+      openCold:"…저, 이제 그만…",
+      openWarm:"…네, 말씀하세요.",
+      suspect:(w,h,c,sa)=>'…'+IGA(w)+' 이상해요. '+h+'에 '+sa+'에서 봤거든요. '+c+'에 있었다고요…?',
+      noSuspect:'…저는 잘 모르겠어요.',
+      notThere:r=>'…'+EUN(r)+' 안 갔어요. 그래서 몰라요.',
+      shrug:'그게… 뭐가 잘못됐나요?',
+      revise:'…아, 그건, 잠깐 나갔던 거예요. 잠깐요.',
+      lock:'…더는 못 말해요.',
+      admit:s=>'…네. '+s,
+      doubt:(mine,seen)=>'그때 저는 '+mine+'에 있었어요. …'+EUL(seen)+' 봤다고요? 그럴 리가… 분명히 봤다고 생각했는데, 어떻게 봤는지는…' } },
+
+{ id:'dorn', ko:'도른', job:'상인 · 50대', lim:90, budget:2, sort:'hour',
+  rules:['근거 없는 압박은 웃어넘긴다. 아무 일도 일어나지 않는다.',
+         '구체적인 증언을 들이대면 진술을 고친다. 그래도 자백은 하지 않는다.',
+         '몰리면 남의 이야기를 팔아 화제를 돌린다.'],
+  profile:[["사람됨", "웃으며 빠져나간다. 근거 없는 말에는 꿈쩍도 하지 않는다."], ["관계", "은식기 사건 이야기가 나오면 웃으며 말을 돌린다."], ["습관", "밤늦게까지 장부를 만진다. 숙소에 틀어박혀 지낸다."], ["그날 밤", "“저야 늘 하던 대로였지요.”"]],
+  lore:{me:"장사꾼입니다. 셈이 맞으면 웃고, 안 맞아도 웃지요.",
+        work:"물건을 들이고 냅니다. 없는 건 구해 드리고요.",
+        years:"드나든 지 여덟 해쯤. 눌러앉은 건 아닙니다.",
+        home:"항구 쪽입니다만, 상인에게 고향이 무슨 소용입니까.",
+        likes:"좋은 술과 좋은 값. 둘 다 흔치 않지요.",
+        habit:"웬만한 말은 웃어넘깁니다. 몰리면 남의 이야기를 꺼내고요.",
+        now:"요즘은 값이 어수선합니다. 사람도 그렇고요."},
+  style:{"order": "hour", "frame": "aside", "offer": "related", "smalltalk":"flat", "disclosure":"guarded", "ref": "eager"},
+  reason:{"scope": "제가 아는 건 어젯밤 일뿐입니다."},
+  t:{pressMult:.5, deflect:true},
+  night:['quarters','kitchen','quarters','quarters','quarters','quarters'],
+  secret:'금지된 물건을 좀 옮겼지요. 문서와는 상관없는 장사입니다.',
+  v:{ loc:(sp,r)=>sp+' '+r+'에 있었지요.',
+      saw:(sp,r,w)=>sp+' '+r+'에서 '+EUL(w)+' 봤지요.',
+      hazy:(sp,r)=>sp+' '+r+'쪽에 인적이 있었던 것 같은데, 글쎄요.',
+      blank:sp=>sp+' 일은 기억이 안 나는군요.',
+      none:'글쎄요, 본 사람은 없습니다.',
+      empty:(sp,r)=>sp+' '+r+'엔 아무도 없었지요.',
+      nada:w=>EUN(w)+' 제가 보탤 게 없군요.',
+      selfq:'제 얘기요?',
+      dry:'그건 이미 말씀드렸지요. 새로울 게 없습니다.',
+      shut:'…오늘은 여기까지 하지요.',
+      deny:'하하. 누가 그런 소릴 하던가요? 사실이 아닙니다.',
+      small:'제가 아는 건 어젯밤 일뿐입니다. 그것이라면 얼마든지 답하지요.',
+      calm:'허, 저는 괜찮습니다. 걱정하실 것 없지요.',
+      press:'하하, 그런 말로는 아무것도 안 나옵니다.',
+      recall:'허, 이제 하나 떠오르는군요.',
+      ask:'언제를 말씀하시는지요?',
+      notw:(sp,r,mine)=>sp+' 저는 '+mine+'에 있었지요. '+r+'까지야 알 수 없습니다.',
+      nohear:'들은 얘기까지 옮길 것은 없지요.',
+      distrust:w=>w+' 얘기는 접어 두지요.',
+      corro:w=>'그거야 저도 봤지요.',
+      also:w=>w+'도 봤지요.',
+      onlywho:w=>IEOT(w)+'지요.',
+      sawT:(sp,w)=>sp+' '+EUL(w)+' 봤지요.',
+      askR:'어디를 말씀하시는지요?',
+      askP:'누구를 말씀하시는지요?',
+      frameL:"뭐, 별것 아닙니다만 — ",
+      again:"그건 아까 말씀드렸지요.",
+      yieldL:"…허. 좋습니다, 이번만이지요.",
+      greet:"허허, 안녕하십니까.",
+      ackAsk:"어젯밤 말씀이시군요.",
+      yes:"그렇습니다.",
+      whyAsk:"허, 그건 어째서 물으십니까? 어젯밤 일이 아니지 않습니까.",
+      rebuke:"허허… 말씀이 과하십니다. 장사꾼도 들을 말이 있고 못 들을 말이 있지요.",
+      no:"아닙니다.",
+      foldWhy:"제 짐수레에 무엇이 실렸는지 아는 사람입니다. 장사를 접을 수는 없지요.",
+      greet2:"또 오셨군요.",
+      thanks:"별말씀을 다 하십니다.",
+      sv:{"relQ": " 말씀입니까. ", "acks": ["허허, 그렇지요.", "그렇습니다그려.", "예예, 그렇고말고요.", "허, 그런가요.", "그렇지요, 그렇지요.", "말씀이 옳습니다."], "mood": "장사꾼은 늘 이런 낯입니다.", "hypo": "가정이라. 재미있는 말씀이나, 답할 것은 없지요.", "redirect": "그보다 어젯밤 일을 물으시지요.", "relN": "…달가운 사이는 아닙니다.", "relP": "괜찮은 사람이지요.", "relZ": "별 감정 없습니다."},
+      nowhy:"이유라. 장사꾼에게 이유를 묻는 건 실례지요.",
+      fold:(mine,claim,spy)=>'…허. 그때 저는 '+mine+'에 있었지요. '+claim+' 이야기는 지어낸 것입니다. '+spy+'의 부탁이었습니다.',
+      confirm:(n)=>n>1?'예, 둘 다 그렇습니다.':'예, 그렇습니다.',
+      openCold:"허, 또 오셨군요.",
+      openWarm:"예예, 얼마든지요.",
+      suspect:(w,h,c,sa)=>'허, '+IGA(w)+' 걸리는군요. '+h+'에 '+sa+'에서 봤습니다. '+c+'이라니요.',
+      noSuspect:'글쎄요, 아직은 뭐라 말씀드리기가.',
+      notThere:r=>EUN(r)+' 갈 일이 없었지요. 알 수가 없습니다.',
+      shrug:'그래서요? 그게 무슨 문제라도 됩니까?',
+      deflect:(sp,r,w)=>'저한테서 나올 건 없습니다. 그보다 — '+sp+' '+r+'에 있던 건 '+IEOT(w)+'지요. 그쪽을 물어보시는 게 어떻겠습니까?',
+      revise:'…아. 그거야 잠깐 바람을 쐬러 나간 것이지요. 말할 거리가 아니라 여겼습니다.',
+      lock:'그 이상은 말씀드릴 수 없습니다.',
+      admit:s=>'…좋습니다. '+s,
+      doubt:(mine,seen)=>'그때 저는 '+mine+'에 있었지요. …'+EUL(seen)+' 봤다고요? 그럴 수가 없군요. 분명 봤다 여겼는데 어떻게 봤는지는 모르겠습니다.' } },
+
+{ id:'howell', ko:'하웰', job:'요리사 · 30대', lim:70, budget:1, sort:'sal',
+  rules:['한 번에 한 가지만 말한다.',
+         '부엌 종으로 시각을 센다. 그의 기억은 흐려지지 않는다.',
+         '추측하지 않는다. 모르면 모른다고 한다.'],
+  profile:[["사람됨", "필요한 말만 한다. 묻지 않은 것은 말하지 않는다."], ["관계", "은식기 사건 때 자기가 몰릴까 두려웠다. 그 뒤로 부엌 밖 일은 입에 담지 않는다."], ["습관", "부엌 종을 세며 일한다. 그래서 시각만은 틀리는 법이 없다."], ["그날 밤", "“부엌에 있었다. 늘 그렇듯이.”"]],
+  lore:{me:"요리사다. 그뿐이다.",
+        work:"불을 지키고 밥을 낸다. 하루 세 번.",
+        years:"구 년.",
+        home:"없다.",
+        likes:"잘 드는 칼.",
+        habit:"한 번에 한 가지만 말한다. 추측은 안 한다.",
+        now:"일이 늘었다. 그것뿐이다."},
+  style:{"order": "sal", "frame": "bare", "offer": "none", "smalltalk":"brisk", "disclosure":"measured", "ref": "immediate"},
+  reason:{"sharp": "부엌 종을 세며 일한다. 시각은 틀리지 않는다.", "scope": "나는 어젯밤 일만 안다."},
+  t:{sharp:true},
+  night:['kitchen','kitchen','kitchen','kitchen','quarters','quarters'],
+  secret:'식료품을 좀 빼돌렸다. 그뿐이다.',
+  v:{ loc:(sp,r)=>sp+' '+r+'.',
+      saw:(sp,r,w)=>sp+' '+r+'. '+IGA(w)+' 있었다.',
+      hazy:(sp,r)=>sp+' '+r+'. 누군지는 모른다.',
+      blank:sp=>sp+'. 모른다.',
+      none:'본 사람 없다.',
+      empty:(sp,r)=>sp+' '+r+'. 아무도 없었다.',
+      nada:w=>EUN(w)+' 모른다.',
+      selfq:'나?',
+      dry:'말했다. 더 없다.',
+      shut:'끝이다.',
+      deny:'아니다. 그런 말 안 했다.',
+      small:'나는 부엌 일만 안다. 어젯밤 일을 물어라.',
+      calm:'괜찮다.',
+      press:'…같은 말을 두 번 하지 않는다.',
+      recall:'하나 더 있다.',
+      ask:'언제.',
+      notw:(sp,r,mine)=>sp+' 나는 '+mine+'. '+r+'은 못 본다.',
+      nohear:'들은 얘기다. 안 옮긴다.',
+      distrust:w=>w+' 얘긴 안 한다.',
+      corro:w=>'나도 봤다.',
+      also:w=>w+'도 있었다.',
+      onlywho:w=>IGA(w)+' 있었다.',
+      sawT:(sp,w)=>sp+'. '+IGA(w)+' 있었다.',
+      askR:'어디.',
+      askP:'누구.',
+      frameL:"",
+      again:"말했다.",
+      yieldL:"…한 번만이다.",
+      greet:"하웰이다.",
+      ackAsk:"어젯밤.",
+      yes:"그렇다.",
+      whyAsk:"그건 왜 묻나.",
+      rebuke:"말이 지나치다. 그만해라.",
+      no:"아니다.",
+      foldWhy:"곳간에서 없어진 것을 안다. 그뿐이다.",
+      greet2:"음.",
+      thanks:"됐다.",
+      sv:{"relQ": "? ", "acks": ["그렇군.", "음.", "그런가.", "…그래.", "알았다.", "음. 그렇다."], "mood": "잠을 덜 잤다.", "hypo": "모른다. 그런 건 생각 안 한다.", "redirect": "용건을 말해라.", "relN": "싫다.", "relP": "괜찮다.", "relZ": "모른다."},
+      nowhy:"이유는 없다. 그냥 그랬다.",
+      fold:(mine,claim,spy)=>'나는 '+mine+'에 있었다. '+EUN(claim)+' 못 봤다. '+IGA(spy)+' 시켰다.',
+      confirm:(n)=>n>1?'둘 다 맞다.':'맞다.',
+      openCold:"또 뭐냐.",
+      openWarm:"말해라.",
+      suspect:(w,h,c,sa)=>IGA(w)+' 이상하다. '+h+'에 '+sa+'에서 봤다. '+c+'이 아니다.',
+      noSuspect:'모른다.',
+      notThere:r=>EUN(r)+' 안 갔다. 모른다.',
+      shrug:'그래서.',
+      revise:'…나갔다. 잠깐.',
+      lock:'더 없다.',
+      admit:s=>'그렇다. '+s,
+      doubt:(mine,seen)=>'그때 나는 '+mine+'에 있었다. '+EUL(seen)+' 볼 수 없다. …봤다고 생각했다. 이상하다.' } },
+
+{ id:'ben', ko:'벤', job:'마부 · 10대', lim:130, budget:3, sort:'hour',
+  rules:['묻지 않은 것까지 말한다. 한 번에 여러 개가 쏟아진다.',
+         '들은 이야기를 옮긴다. 누구한테 들었는지는 흐린다.',
+         '아무리 몰아붙여도 지치지 않는다.'],
+  profile:[["사람됨", "입이 쉬지 않는다. 아무리 몰아붙여도 지치지 않는다."], ["관계", "은식기 사건 때 무언가 봤지만 말하지 않았다. 그걸 두고두고 후회한다."], ["습관", "마구간과 안뜰을 오간다. 말을 핑계로 성 안을 쏘다닌다."], ["그날 밤", "“저 진짜 아무것도 안 했어요!”"]],
+  lore:{me:"저 벤이에요! 말 돌보는 일 해요!",
+        work:"말 여섯 마리요! 이름 다 알아요!",
+        years:"삼 년이요! 열둘에 왔어요!",
+        home:"아랫마을이요! 누나가 거기 살아요!",
+        likes:"밤색 암말요! 걔가 제일 순해요!",
+        habit:"묻지 않은 것까지 말해요. 아저씨들이 그만하래요!",
+        now:"요즘 다들 무서운 얼굴이에요!"},
+  style:{"order": "hour", "frame": "tack", "offer": "gossip", "smalltalk":"warm", "disclosure":"forthcoming", "ref": "reluctant"},
+  reason:{"blur": "그때 본 걸 말 안 했다가 두고두고 후회했어요. 이제는 들은 것도 다 말해요.", "scope": "저야 어젯밤 일이면 다 말해요!"},
+  t:{blurSource:true, chatty:true, pressMult:.4},
+  night:['yard','court','court','kitchen','court','quarters'],
+  secret:'말을 몰래 타고 성 밖으로 나갔어요! 아무한테도 말하지 마세요!',
+  v:{ loc:(sp,r)=>sp+' '+r+'에 있었어요!',
+      saw:(sp,r,w)=>sp+' '+r+'에서 '+EUL(w)+' 봤어요!',
+      hazy:(sp,r)=>sp+' '+r+'에 누구 있었는데 누구였지…',
+      blank:sp=>sp+'은 기억 안 나요.',
+      none:'아무도 못 봤어요!',
+      empty:(sp,r)=>sp+' '+r+'엔 아무도 없었어요!',
+      nada:w=>EUN(w)+'요? 그건 모르겠어요.',
+      selfq:'저요? 아 저야…',
+      dry:'그건 아까 다 말했잖아요! 더 없어요.',
+      shut:'…',
+      deny:'에? 그런 말 한 적 없어요!',
+      small:'저야 뭐든 말해요! 어젯밤 일이면 더 좋고요!',
+      calm:'저야 뭐 괜찮아요!',
+      press:'아 진짜 아니라니까요!',
+      recall:'아 맞다! 하나 더요!',
+      ask:'언제요? 언제!',
+      notw:(sp,r,mine)=>sp+' 저 '+mine+'에 있었어요! '+r+'은 못 봤죠!',
+      nohear:'그건 들은 얘긴데요…',
+      distrust:w=>EUN(w)+'요? 음…',
+      corro:w=>'아 저도 봤어요!',
+      also:w=>w+'도요!',
+      onlywho:w=>EUL(w)+'요!',
+      sawT:(sp,w)=>sp+' '+EUL(w)+' 봤어요!',
+      askR:'어디요? 어디!',
+      askP:'누구요?',
+      frameL:" 아 이건 확실해요!",
+      again:"아까 말했잖아요!",
+      yieldL:"아 알았어요, 말할게요!",
+      greet:"아! 안녕하세요! 저 벤이에요!",
+      ackAsk:"아, 어젯밤이요?",
+      yes:"네!",
+      whyAsk:"어? 그건 왜 물어보세요?",
+      rebuke:"…그런 말은 하지 마세요. 저 기분 나빠요.",
+      no:"아뇨!",
+      foldWhy:"제가 말 몰고 성 밖에 나간 걸 봤대요! 그거 들키면 저 쫓겨나요!",
+      greet2:"또 오셨네요!",
+      thanks:"헤헤, 뭘요!",
+      sv:{"relQ": "요? ", "acks": ["아 그쵸!", "그러니까요!", "헤헤, 맞아요!", "맞아요 맞아요!", "어 진짜요?", "그쵸그쵸!"], "mood": "저요? 저야 뭐 늘 이래요!", "hypo": "네? 에이, 설마요! …아니 진짜로요?", "redirect": "어젯밤 얘기 물어보세요! 저 많이 알아요!", "relN": "음… 좀 그래요.", "relP": "좋은 사람이에요!", "relZ": "딱히 뭐…"},
+      nowhy:"어… 그냥요! 딱히 이유는 없었는데요?",
+      fold:(mine,claim,spy)=>'저… 저 사실 '+mine+'에 있었어요! '+EUN(claim)+' 못 봤어요! '+IGA(spy)+' 그렇게 말하라고 했단 말이에요!',
+      confirm:(n)=>n>1?'네! 둘 다 맞아요!':'네 맞아요!',
+      openCold:"또요…?",
+      openWarm:"아 오셨어요! 뭐 물어보실래요?",
+      suspect:(w,h,c,sa)=>'어! '+IGA(w)+' 이상해요! '+h+'에 '+sa+'에서 봤는데요! '+c+'에 있었대요?',
+      noSuspect:'음… 아직 잘 모르겠어요!',
+      notThere:r=>'아뇨! '+EUN(r)+' 안 갔어요! 그래서 몰라요!',
+      shrug:'그게 왜요?',
+      revise:'…아 그건요, 잠깐 나갔던 거예요!',
+      lock:'그건 진짜 말 못 해요!',
+      admit:s=>'…네. '+s,
+      doubt:(mine,seen)=>'그때 저는 '+mine+'에 있었는데… '+EUL(seen)+' 봤다고요? 어… 그럼 못 본 건가? 분명 봤다고 생각했는데…' } }
+];
+const NK=Object.fromEntries(NPCS.map(n=>[n.id,n.ko]));
+const N=Object.fromEntries(NPCS.map(n=>[n.id,n]));
+const TICKS=6, PER_TICK=3, BEATS=TICKS*PER_TICK;   // 18회 — 10시부터 16시까지, 한 틱에 세 번
+const COST_ASK=8, COST_PUSH=18, COOL=30;
+const RATE={high:.03,med:.07,told:.07};
+
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const el=(t,c,x)=>{const e=document.createElement(t); if(c)e.className=c; if(x!=null)e.textContent=x; return e};
+/* 조사 — 받침에 따라 을/를, 이/가, 은/는 */
+const jong=s=>{const t=String(s||''),c=t.charCodeAt(t.length-1); return c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0};
+const EUL=s=>s+(jong(s)?'을':'를'), IGA=s=>s+(jong(s)?'이':'가'), EUN=s=>s+(jong(s)?'은':'는');
+const WA=s=>s+(jong(s)?'과':'와');
+
+/* ════════════════ 사건 생성 (검증된 코어) ════════════════ */
+let G=null;
+function newCase(){
+  const base={},truth={};
+  NPCS.forEach(n=>{base[n.id]=n.night.slice(); truth[n.id]=n.night.slice()});
+  const spy=rnd(NPCS).id;
+  const tOK=[2,3,4].filter(t=>base[spy][t-1]!=='court');
+  const theft=rnd(tOK.length?tOK:[2,3,4]);
+  truth[spy][theft]='archive'; truth[spy][theft-1]='court';
+  const [W,R,B,C]=shuf(NPCS.map(n=>n.id).filter(i=>i!==spy));
+  truth[W][theft-1]='court';
+  const hPool=[1,2,3,4].filter(t=>t!==theft&&t!==theft-1&&base[R][t]!=='yard');
+  const hTick=rnd(hPool.length?hPool:[1,2,3,4].filter(t=>t!==theft&&t!==theft-1));
+  truth[R][hTick]='yard'; truth[B][hTick]='yard';
+  const framed=rnd([W,R,B]);
+  const bad=new Set([truth[C][theft],truth[framed][theft]]);
+  const iRoom=['court','archive','kitchen','yard','gate'].find(r=>!bad.has(r));
+
+  const claim=(id,t)=>{
+    if(id===spy&&(t===theft||t===theft-1))return base[spy][t];
+    if(id===R&&t===hTick)return base[R][t];
+    return truth[id][t];
+  };
+  const rows={}; NPCS.forEach(n=>rows[n.id]=[]);
+  let rid=0;
+  NPCS.forEach(n=>{for(let t=0;t<6;t++)
+    rows[n.id].push({id:'r'+rid++,kind:'self',subject:n.id,room:claim(n.id,t),hour:t,sal:'fixed',born:0})});
+  for(let t=0;t<6;t++){
+    const by={}; NPCS.forEach(n=>{(by[truth[n.id][t]]=by[truth[n.id][t]]||[]).push(n.id)});
+    Object.entries(by).forEach(([room,ids])=>{
+      ids.forEach(a=>ids.forEach(b=>{ if(a===b)return;
+        const high=(t===theft-1&&b===spy&&room==='court');
+        rows[a].push({id:'r'+rid++,kind:'saw',subject:b,room,hour:t,sal:high?'high':'med',born:0});
+      }));
+    });
+  }
+  rows[C].push({id:'r'+rid++,kind:'saw',subject:framed,room:iRoom,hour:theft,sal:'med',born:0,implanted:true});
+
+  // 공범 — 첩자의 거짓 알리바이를 뒷받침한다. 들킬 구멍(같은 방에 없었음)이 반드시 있어야 한다.
+  const A=B;                                     // 목격자·운반자가 아닌 사람
+  let aHour=null;
+  [theft-1,theft].forEach(h=>{ if(aHour!=null)return;
+    if(truth[A][h]!==base[spy][h]) aHour=h; });  // 그 방에 없었어야 탄로 난다
+  let accomplice=null;   // 어젯밤 이미 포섭해 둔 한 사람 — 낮에 더 늘 수 있다
+  if(aHour!=null){
+    accomplice={who:A,hour:aHour,room:base[spy][aHour]};
+    rows[A].push({id:'r'+rid++,kind:'saw',subject:spy,room:base[spy][aHour],hour:aHour,
+                  sal:'high',born:0,covering:true});   // 외운 거짓말이라 또렷하다
+  }
+  const hidden=r=>((r.owner===spy&&r.kind==='saw'&&(r.hour===theft||r.hour===theft-1))
+                 ||(r.owner===R&&r.kind==='saw'&&r.hour===hTick));
+  NPCS.forEach(n=>rows[n.id].forEach(r=>r.owner=n.id));
+
+  // 같은 객체를 가리켜야 한다 — 사본을 두면 무너뜨린 표시가 한쪽에만 남는다
+  const recruits=accomplice?[Object.assign(accomplice,{at:0,folded:false})]:[];
+  G={spy,theft,W,R,B,C,A,accomplice,recruits,framed,iRoom,hTick,truth,base,rows,hidden,
+     tick:0,beats:BEATS,sel:null,cards:[],vague:0,pat:{},pushed:{},reassured:{},
+     ctx:{},rel:{},toldSecret:{},implantVoid:false,over:false,log:[],feed:[],parse:null,miss:0,
+     turnNo:0,lastQ:null,misses:[],utter:'',hist:{},group:null,hereRoom:null};
+  NPCS.forEach(n=>{G.pat[n.id]=0; G.pushed[n.id]=0; G.reassured[n.id]=0;
+                   G.ctx[n.id]=newCtx(); G.toldSecret[n.id]=false;
+                   G.rel[n.id]={player:{trust:0,cause:null},npcs:{}};
+                   NPCS.forEach(m=>{if(m.id!==n.id)G.rel[n.id].npcs[m.id]={trust:0,cause:null}})});
+  // 과거가 남긴 단 하나의 관계선 — 은식기 사건
+  G.rel.kyle.npcs.mira={trust:-2,cause:'지난달 은식기 사건'};
+  say('sys',null,'심문 첫날 10시. 다섯 사람이 성 안에 있다. 아무도 나가지 못한다. 해가 지기 전까지 열여덟 번 말을 걸 수 있다.');
+}
+
+/* ════════════════ 낮 · 틱 ════════════════ */
+const dayPos=(i,t)=>ROOMS[(i*2+t*(i+1))%6].id;
+const posNow=id=>dayPos(NPCS.findIndex(n=>n.id===id),G.tick);
+/* 포섭된 사람 — 아직 무너지지 않은 것만 */
+function recruitOf(id){ return (G.recruits||[]).find(r=>r.who===id&&!r.folded)||null }
+/* 소문을 옮기는 사람인가 — 이름이 아니라 성격에서 나온다 */
+const carrier=id=>!!(N[id].t.chatty)||((N[id].style||{}).offer==='gossip');
+
+/* ════════ 낮에 인물끼리 벌어지는 일 ════════
+   규칙은 둘뿐이고, 둘 다 엔진이 소유한다. 모델은 여기에 손대지 못한다.
+   철칙 (2026-08-17 사용자 지시로 정정):
+     · 알리지 않는다. 포섭했다는 사실도, 누가 누구를 포섭했는지도 화면에 쓰지 않는다.
+     · 다만 반드시 발각될 수 있어야 한다 — 심은 증언은 그가 그 방에 없었으므로
+       시야 규칙으로 깨진다. 들이대면 무너지고 시킨 사람과 이유를 말한다.
+   통보하면 추리가 사라지고, 깨지지 않으면 게임이 불공정해진다. 둘 다 아니어야 한다. */
+function mingle(room,ids){
+  /* ① 전언 — 소문을 옮기는 성격이면 옆 사람 이야기를 주워 온다 */
+  ids.filter(carrier).forEach(me=>{
+    const other=ids.find(i=>i!==me); if(!other)return;
+    const rel=G.rel[other]&&G.rel[other].npcs[me];
+    if(rel&&rel.trust<0)return;                       // 못 믿는 사람에겐 말하지 않는다
+    // 자기가 나오는 이야기는 옮기지 않는다 — "내가 나를 봤다" 가 되어 버린다
+    const pool=G.rows[other].filter(r=>r.kind==='saw'&&!G.hidden(r)&&!r.implanted&&!r.covering
+                                     &&r.subject!==me);
+    if(!pool.length)return;
+    const s=rnd(pool);
+    if(G.rows[me].some(r=>r.told&&r.subject===s.subject&&r.hour===s.hour&&r.room===s.room))return;
+    G.rows[me].push({id:'t'+(Math.random()*1e6|0),kind:'saw',owner:me,subject:s.subject,
+      room:s.room,hour:s.hour,sal:'told',born:G.tick,told:NK[other]});
+    remember(me,'전언',NK[other]+'에게서 어젯밤 이야기를 하나 옮겨 들었다',other);
+    G.feed.unshift(IGA(NK[me])+' '+NK[other]+'의 이야기를 옮겨 들었다.');
+  });
+
+  /* ② 포섭 — 첩자가 단둘이 있을 때, 몰리고 있을 때만 움직인다 */
+  if(ids.length!==2||!ids.includes(G.spy))return;
+  const mark=ids.find(i=>i!==G.spy);
+  if(mark===G.W)return;                               // 목격자는 건드리지 않는다 — 정답이 사라진다
+  if(recruitOf(mark)||G.recruits.some(r=>r.who===mark))return;
+  // 몰리고 있는가 — 절도 직전 시각에 첩자를 본 증언이 판에 올라와 있는가
+  if(!G.cards.some(x=>x.subject===G.spy&&x.hour===G.theft-1))return;
+  // 깨질 구멍이 있어야 한다 — 그 시각 그 방에 없었어야 시야 규칙으로 무너진다
+  const h=[G.theft-1,G.theft].find(t=>G.truth[mark][t]!==G.base[G.spy][t]);
+  if(h==null)return;
+  const claim=G.base[G.spy][h];
+  G.rows[mark].push({id:'c'+(Math.random()*1e6|0),kind:'saw',owner:mark,subject:G.spy,
+    room:claim,hour:h,sal:'high',born:G.tick,covering:true});
+  G.recruits.push({who:mark,hour:h,room:claim,at:G.tick,folded:false});
+  // 원장에는 남기되 절대 보여 주지 않는다 — 포섭은 통보되지 않고 발각된다
+  remember(mark,'포섭',NK[G.spy]+'가 약점을 쥐고 거짓 증언을 부탁했다',G.spy,true);
+  /* 여기서 아무것도 알리지 않는다. 포섭은 통보되는 것이 아니라 발각되는 것이다.
+     남는 흔적은 동선 기록의 평범한 한 줄(누가 누구와 있었다)과,
+     그가 하지 못했을 목격을 했다고 말한다는 사실뿐이다. */
+}
+function advance(){
+  G.tick++;
+  if(G.tick>=TICKS){renderAll(); end(false,'해가 졌다. 첩자는 성문을 빠져나갔다.'); return}
+  NPCS.forEach(n=>G.pat[n.id]=Math.max(0,G.pat[n.id]-COOL));
+  const by={}; NPCS.forEach(n=>{const p=posNow(n.id); (by[p]=by[p]||[]).push(n.id)});
+  Object.entries(by).forEach(([room,ids])=>{
+    if(ids.length<2)return;
+    G.feed.unshift(ids.map(i=>NK[i]).join(' · ')+' — '+RKO[room]);
+    mingle(room,ids);
+  });
+  G.feed=G.feed.slice(0,14);
+}
+function spend(){ G.beats--; if(G.beats>0 && G.beats%PER_TICK===0) advance(); else if(G.beats<=0) advance(); }
+
+/* ════════════════ 기억 조회 ════════════════ */
+function conf(id,r){
+  if(r.sal==='fixed')return 1;
+  if(N[id].t.sharp)return 1;                        // 하웰: 기억이 흐려지지 않는다
+  const b=r.sal==='told'?.78:1;      // 0.6 은 이름 표기 문턱(0.66) 아래여서 전언이 늘 흐릿했다
+  return Math.max(0,b-RATE[r.sal==='told'?'told':r.sal]*(G.tick-r.born));
+}
+/* 인물 규칙이 무엇을 내놓을지 결정한다 */
+function pool(id,pred,{direct=null}={}){
+  const t=N[id].t;
+  return G.rows[id].filter(r=>{
+    if(G.hidden(r))return false;
+    if(t.noHearsay&&r.told)return false;                       // 카일: 전언 안 옮김
+    if(t.withhold&&r.subject===t.withhold&&direct!==t.withhold&&!yielded(id,'distrust'))return false; // 카일: 미라는 직접 물어야
+    return pred(r);
+  });
+}
+const IEOT=s=>s+(jong(s)?'이었':'였');
+const andList=a=>a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+(jong(a[a.length-2])?'과 ':'와 ')+a[a.length-1];
+/* 사람은 같은 맥락을 문장마다 되풀이하지 않는다.
+   연속된 시각 + 같은 장소를 하나의 묶음으로 합친 뒤 문장 하나로 만든다. */
+const spanLoc=hs=>hs.length===1?HOURS[hs[0]]+'엔'
+  :hs.every((h,i)=>i===0||h===hs[i-1]+1)?HOURS[hs[0]]+'부터 '+HOURS[hs[hs.length-1]]+'까지'
+  :hs.map(h=>HOURS[h]).join(', ')+'엔';
+const spanSaw=hs=>hs.length===1?HOURS[hs[0]]+'에'
+  :hs.every((h,i)=>i===0||h===hs[i-1]+1)?HOURS[hs[0]]+'부터 '+HOURS[hs[hs.length-1]]+'까지'
+  :hs.map(h=>HOURS[h]).join(', ')+'에';
+function merge(rows,kind){
+  const out=[];
+  if(kind==='self'){
+    [...rows].sort((a,b)=>a.hour-b.hour).forEach(r=>{
+      const L=out[out.length-1];
+      if(L&&L.room===r.room&&L.hours[L.hours.length-1]===r.hour-1){L.hours.push(r.hour); L.rows.push(r)}
+      else out.push({room:r.room,hours:[r.hour],who:[],rows:[r]});
+    });
+    return out;
+  }
+  const cell={};
+  rows.forEach(r=>{const k=r.room+'|'+r.hour;
+    (cell[k]=cell[k]||{room:r.room,hours:[r.hour],who:[],rows:[]});
+    if(!cell[k].who.includes(r.subject))cell[k].who.push(r.subject);
+    cell[k].rows.push(r)});
+  Object.values(cell).sort((a,b)=>a.hours[0]-b.hours[0]).forEach(g=>{
+    const L=out[out.length-1];
+    if(L&&L.room===g.room&&L.who.join()===g.who.join()&&L.hours[L.hours.length-1]===g.hours[0]-1){
+      L.hours.push(g.hours[0]); L.rows.push(...g.rows)}
+    else out.push({...g});
+  });
+  return out;
+}
+function take(id,rows,kind,n){
+  const c=N[id], fresh=rows;                    // 차감은 subtract() 가 명제 단위로 끝냈다
+  const tr=(G.rel&&G.rel[id])?G.rel[id].player.trust:0;
+  if(!fresh.length) return {groups:[], exhausted:false};
+  const w={high:0,med:1,told:2,fixed:1};
+  const gs=merge(fresh,kind);
+  // 가장 인상적인 것을 먼저 말한다. 그 다음은 인물의 성향 순서.
+  gs.sort((a,b)=>(a.rows.some(r=>r.sal==='high')?0:1)-(b.rows.some(r=>r.sal==='high')?0:1)
+    ||(c.sort==='sal'?(w[a.rows[0].sal]-w[b.rows[0].sal])||a.hours[0]-b.hours[0]:a.hours[0]-b.hours[0]));
+  const dis=(c.style&&c.style.disclosure)||'measured';
+  const base=Math.max(1,Math.min(3,c.budget+(dis==='forthcoming'?1:dis==='guarded'?-1:0)));
+  const vol=Math.max(1,Math.min(3,base+(tr>0?1:tr<0?-1:0)));   // 성격이 기준선, 신뢰가 그 위에서 움직인다
+  return {groups:gs.slice(0,n||vol), exhausted:false};
+}
+
+/* ════════════════ 카드 ════════════════ */
+/* 목격은 같은 방에서만 성립한다. 그러므로 "23시에 안뜰에서 벤을 봤소" 는
+   두 가지를 한꺼번에 주장한다 — 벤이 거기 있었다는 것, 그리고 자기도 거기 있었다는 것.
+   증언판이 앞엣것만 적으면 판이 증언과 달라진다. 뒤엣것도 같이 올린다.
+   전언(들은 얘기)은 예외다 — 옮긴 사람은 그 자리에 없었다. */
+function witnessSelf(id,r){
+  if(r.told) return null;                                   // 전언은 자기 위치를 주장하지 않는다
+  return addCard({kind:'self',subject:id,room:r.room,hour:r.hour,by:id,mark:'●',conf:1,viaSaw:true});
+}
+function groundWitnessSelf(ctx,id,r,n){
+  if(r.told) return;
+  ctx.ground.set(AT(id,r.hour,r.room),{by:'npc',turn:n,via:'witnessed',conf:1,rows:[r.id]});
+}
+function addCard(o){
+  if(o.subject===null){G.vague++; return null}
+  const k=o.kind+o.subject+o.room+o.hour+o.by;
+  if(G.cards.some(c=>c.key===k))return null;
+  const c={key:k,...o}; 
+  // 심어진 목격이 이미 무너졌다면, 뒤늦게 수집해도 무효로 들어온다
+  if(G.implantVoid&&o.by===G.C&&o.kind==='saw'&&o.hour===G.theft) c.doubt=true;
+  G.cards.push(c); return c;
+}
+function say(who,id,text){ G.log.push({who,id,text}); }
+function voice(id,text){ if(text) say('npc',id,text); }
+
+/* ═══════════ 명제 ═══════════
+   두 종류면 이 게임의 모든 주장을 담는다.
+     AT (누가, 언제, 어디)                — 세계에 대한 주장
+     OBS(누가 관찰, 언제, 누구를, 어디서) — 관찰에 대한 주장 (mode 는 값에 둔다)
+   목격 진술은 둘 다 확립한다. AT 만 이미 알려져 있으면 그 목격은 "나도 봤소"가 된다. */
+const AT =(who,h,room)=>'AT|'+who+'|'+h+'|'+room;
+const OBS=(obs,h,who,room)=>'OBS|'+obs+'|'+h+'|'+who+'|'+room;
+const newCtx=()=>({ground:new Map(),topic:{hour:null,room:null,person:null,hourAt:-9,roomAt:-9,personAt:-9},
+  turns:[],askedQ:new Map(),greeted:false,acked:false,approached:false,voiced:new Set(),
+  stance:new Map(),    // 스스로 밝힌 태도 — 사실이 아니라 "말할 수 있는 것"의 경계
+  framed:new Set()});  // 말버릇을 이미 보인 행위
+
+/* ═══════════ 말의 재료 — 표와 의무 ═══════════
+   아래 표들은 ⓪~① 층이 함께 쓴다. 어느 한 층의 소유가 아니다. */
+const HOURPAT=[['21시',0],['22시',1],['23시',2],['00시',3],['자정',3],['01시',4],['02시',5],
+               ['아홉시',0],['열시',1],['열한시',2],['열두시',3],['한시',4],['두시',5],
+               ['0시',3],['1시',4],['2시',5]];
+const ROOMPAT=[['뒷마당','yard'],['마구간','yard'],['후원','yard'],
+               ['동문 초소','gate'],['초소','gate'],['동문','gate'],['성문','gate'],['문간','gate'],
+               ['서고','archive'],['문서','archive'],
+               ['안뜰','court'],['정원','court'],['마당','court'],
+               ['부엌','kitchen'],['주방','kitchen'],['식당','kitchen'],
+               ['숙소','quarters'],['침실','quarters'],['방','quarters']];
+const RE={
+  /* 안심시키는 말. "믿" 은 뺐다 — "믿을 수 없소"·"믿을 만한 사람이오?" 가
+     안심으로 읽혀 신뢰가 거꾸로 오르던 자리다. 안심의 뜻이 분명한 꼴만 남긴다. */
+  reassure:/괜찮|안심|걱정 마|걱정하지|해치지|도와|편하게|천천히|겁내|미안|사과|진정|편히|무섭|두려|보호|믿어도|믿으셔도|나를 믿|날 믿/,
+  // 불신은 압박이다 — "믿을 수 없소" 가 아무 갈래에도 안 걸려 죽던 자리
+  press:/거짓|숨기|숨긴|사실대로|바른대로|다 알|이상하|말이 안|솔직|실토|이실직고|추궁|똑바로|수상|자백|불어|털어|했잖|범인|첩자|훔쳤|도둑|왜 그랬|변명|둘러대|못 믿|믿을 수 없|믿기 어렵|믿기지 않/,
+  /* 남의 말을 옮기는 표지. "봤다던데" 처럼 어간이 무엇이든 "-다던데/-다더군" 은 인용이다 —
+     동사마다 따로 적으면 늘 빠지는 게 생긴다. */
+  quote:/다던데|다더군|다더라|다는데|라던데|하던데|랬는데|고 했|하더군|말했|그러던데|증언|봤다는데|있었다는데|있었다고|들었는데|한다던데|라는데|증거/,
+  sight:/봤|보았|목격|마주|만났|누가|누구|같이 있|함께 있|드나든|지나간|들었|듣지|소리|기척/,
+  where:/어디|있었|행적|위치|무엇|뭐 하|뭘 하|뭐했|계셨|다녔|갔|머물|지냈|보냈/,
+  self:/당신|자네|너[는가를]?\b|네가|그대|본인|스스로/,
+  greet:/안녕|반갑|처음 뵙|오랜만|실례|수고|식사(는|를)?\s*(하|했)|평안|잘 지냈|잘 있었|안녕히|누구시/,
+  // 무례 — 뜻이 분명한 것만. 애매한 말을 무례로 몰면 그게 더 나쁘다
+  abuse:/바보|멍청|미친놈|미친년|또라이|병신|닥쳐|꺼져|죽여|죽일|주둥이|건방|한심|천하|쓸모없|짐승 같|더러운/,
+  thanks:/고맙|감사|잘 부탁|친절|훌륭|대단하|덕분/,
+  ask:/에 대해|대해서|말해|말하시|말씀해|알려|설명|얘기해|얘기 좀|어땠|무슨/,
+  /* 가정 표지. "그렇다면·그러면" 은 앞말을 이어 가는 접속사지 가정이 아니다 —
+     "다면" 이 "그렇다면" 안에 들어 있다는 이유로 가정으로 읽으면 안 된다. */
+  hypo:/만약|만일|가정|혹시 제가|내가 범인|(?<!그렇|그러|아니|없|있|맞)[가-힣]{2,}(라면|다면)(?!서)/,
+  conj:/^\s*(그렇다면요|그렇다면|그러니까|그러면|그럼|그래서|그리고|또한|한편)\s*[,·]?\s*/,
+  opinion:/싫어|좋아하|미워|밉[다소니]|믿[으소나습]|믿을 만|믿을만|믿음직|사이가|감정|어떻게 생각|어떤 사람/,
+  mood:/기분|피곤|안색|얼굴빛|힘들어|지쳐|초췌|안 좋아 보|좋아 보이|괜찮아 보/,
+  qend:/(소|까|나|니|요|가|지|오|다|어|야|음)\?\s*$/,
+  wh:/누구|누가|누굴|무엇|뭐|뭘|언제|어디|어느|왜|어째서|어떻|어떤|몇|얼마/,   // 의문사 — 닫힌 부류
+  askWhen:/언제|몇 시/, askRange:/부터.*까지|언제까지|몇 시까지|동안|사이에/,
+  askWhy:/왜|어째서|무슨 일로|이유/,
+  askAct:/뭘 했|뭐 했|뭐했|무엇을 했|뭐 하고|뭘 하고|하고 있었|무슨 일을|어떻게 보냈|지내셨/,
+  askSus:/수상|의심|범인|첩자가 누구|누구.*같소|누구.*같습니까|짚이는/,
+  deicT:/그때|그 시각|그 시간|그때쯤|그 무렵|아까 그때/,
+  after:/이후|그 다음|그담|그 뒤|그러고 나서|그러곤|다음엔|다음은/,
+  deicR:/거기|그곳|그 방|그쪽/,
+  deicHere:/여기|이곳|이 방|이쪽|이 자리/,   // 지금 그가 서 있는 곳 — 되물을 것이 없다
+  deicP:/그자|그 사람|그 친구|그이/,
+  broad:/어젯밤|간밤|그날 밤|전부|모두|쭉|내내|하룻밤|밤새/
+};
+const ACTKO={ASK_WHEREABOUTS:'행적 질문',ASK_SIGHTING:'목격 질문',ASK_ABOUT:'인물 질문',
+             ASK_ROOM:'장소 질문',PRESENT:'증언 제시',PRESS:'압박',REASSURE:'안심시킴',
+             GREET:'인사',SOCIAL:'사교',UNKNOWN:'잡담',HYPOTHETICAL:'가정',REMARK:'개인적 언급',
+             OPINION:'감정·인물평',FOLLOW_UP:'이어 묻기',ASK_SUSPECT:'의심 묻기'};
+/* 행위마다 지는 의무 — 정보 의무가 없는 행위는 기억을 읽지도, 판에 적지도, 시간을 쓰지도 않는다 */
+const OBLIG={GREET:'ack',SOCIAL:'ack',UNKNOWN:'ack',HYPOTHETICAL:'ack',REMARK:'ack',OPINION:'ack',
+             ASK_WHEREABOUTS:'answer',ASK_SIGHTING:'answer',ASK_ABOUT:'answer',ASK_ROOM:'answer',
+             FOLLOW_UP:'answer',ASK_SUSPECT:'answer',PRESENT:'react',PRESS:'react',REASSURE:'react'};
+const mayRetrieve=act=>OBLIG[act]==='answer';
+/* 왜 못 알아들었는지 — 셈이 아니라 사람에게 할 말로 남긴다 */
+function whyMiss(f){
+  const ent=(f.persons||[]).length+(f.rooms||[]).length+(f.hours||[]).length;
+  if(!ent) return '시각·장소·사람도, 묻는 표현도 찾지 못했다';
+  if((f.persons||[]).length&&!(f.rooms||[]).length&&!(f.hours||[]).length)
+    return '이름만 있고 무엇을 묻는지가 없었다';
+  return '시각·장소는 읽었지만 무엇을 묻는지가 없었다';
+}
+function scanAll(s,pat){
+  let t=s; const out=[];
+  [...pat].sort((a,b)=>b[0].length-a[0].length).forEach(([k,v])=>{
+    if(t.includes(k)){ if(!out.includes(v))out.push(v); t=t.split(k).join(' ') }
+  });
+  return out;
+}
+/* ═══════════ ⓪-½ 한국어 형태소 층 ═══════════
+   부분 문자열 매칭이 깨지는 이유는 하나다 — 어절 안의 형태소 경계를 못 본다.
+     "그렇다면" 은 그렇+다면(이음 어미)이지 가정이 아니다
+     "본 사람" 도 "보신 분" 도 "봤소" 와 같은 동사다
+   그래서 표지를 글자가 아니라 **어간**에 걸 수 있게, 조사와 어미를 떼는 층을 둔다.
+   사전도 모델도 쓰지 않는다. 규칙표 하나로 끝난다 — 자족 HTML 을 깨지 않는다. */
+const JOSA=['에게서','에서부터','으로부터','한테서','에게','한테','에서','으로','부터','까지','처럼','보다','마다','조차','밖에','뿐',
+            '이랑','과의','와의','으로서','로서','으로써','로써','의','은','는','이','가','을','를','에','와','과','랑','도','만','랑은'];
+const EOMI=['었습니까','았습니까','으셨습니까','셨습니까','습니까','ㅂ니까','었나요','았나요','으셨나요','셨나요','나요','는지요','은지요',
+            '었는지','았는지','으신지','시는지','는지','은지','었어요','았어요','으셨어요','셨어요','어요','아요','에요','예요',
+            '었소','았소','으셨소','셨소','겠소','었다','았다','었네','았네','네요','군요','더군','던데','다면','라면','면서','으면','면',
+            '으시','시','었','았','겠','지요','지','고','며','다','소','오','요','까','나','니','네','데','ㄴ','은','는','을','ㄹ','아','어'];
+/* 불규칙·존대형을 사전꼴로 모은다. 앞에서부터 가장 긴 것을 먼저 본다. */
+const STEMMAP=[
+  ['보시','보다'],['보신','보다'],['보셨','보다'],['봤','보다'],['보았','보다'],['본','보다'],['볼','보다'],['보','보다'],
+  ['계시','있다'],['계셨','있다'],['계신','있다'],['있','있다'],['없','없다'],
+  ['만나','만나다'],['만났','만나다'],['마주치','마주치다'],['마주쳤','마주치다'],
+  ['듣','듣다'],['들었','듣다'],['들으','듣다'],['들리','들리다'],
+  ['가','가다'],['갔','가다'],['다녀','가다'],['드나들','드나들다'],['드나들었','드나들다'],
+  ['지나가','지나가다'],['지나갔','지나가다'],['스치','스치다'],['스쳤','스치다'],
+  ['목격하','목격하다'],['목격했','목격하다'],['머물','머물다'],['머물렀','머물다'],
+  ['하','하다'],['했','하다'],['말하','말하다'],['말했','말하다'],['말씀하','말하다'],
+];
+const stripTail=(w,tails)=>{
+  for(const t of tails.slice().sort((a,b)=>b.length-a.length))
+    if(w.length>t.length&&w.endsWith(t)) return w.slice(0,-t.length);
+  return w;
+};
+/* 한 어절 → {말, 어간, 사전꼴} */
+function morph(word){
+  const raw=word.replace(/[.,!?"'()·…]/g,'');
+  if(!raw) return null;
+  let body=stripTail(raw,JOSA);
+  body=stripTail(body,EOMI);
+  let lemma=null;
+  for(const [pre,dict] of STEMMAP) if(body===pre||raw.startsWith(pre)){ lemma=dict; break }
+  return {말:raw, 어간:body||raw, 사전꼴:lemma};
+}
+/* 문장 → 형태소 조각들. 이 층 위에서 표지를 어간에 건다. */
+function morphs(text){
+  return String(text||'').split(/\s+/).map(morph).filter(Boolean);
+}
+const hasLemma=(ms,...ls)=>ms.some(m=>ls.indexOf(m.사전꼴)>=0);
+const hasStem=(ms,...ss)=>ms.some(m=>ss.indexOf(m.어간)>=0);
+
+/* ═══════════ ⓪ 장면과 호칭 ═══════════
+   파이프라인의 첫 층. 파서에 닿기 전에 두 가지를 가른다.
+     장면  — 지금 이 대화가 어디서 벌어지고 누가 거기 있는가
+     호칭  — 부르는 이름과 말하는 주어는 다르다
+   이 층이 없으면 "카일, 하웰. 서고에 있었습니까?" 의 이름들이 주어로 읽혀
+   묻는 말이 들이대는 말로 뒤집힌다. 인물별 예외가 아니라 층의 부재였다. */
+function scene(id){
+  const room=posNow(id);
+  return {room, present:NPCS.filter(n=>posNow(n.id)===room).map(n=>n.id)};
+}
+/* ═══════════ 만남 ═══════════
+   플레이어는 인물이 있는 곳으로 찾아가 말을 건다. 그러니 "여기" 는
+   **지금 그가 있는 방**이고, 틱마다 바뀐다. 얼려 두지 않는다.
+
+   다만 한 발화 안에서는 한 자리여야 한다. 대상마다 따로 풀면
+   "두 분은 여기에 계셨나요?" 가 사람마다 다른 방을 뜻하게 된다 —
+   그건 대화가 벌어지는 자리가 아니다. 말을 건 사람의 자리를 그 발화의 "여기" 로 삼는다. */
+function meeting(id){ return id?scene(id):null }
+const HONOR=/^(씨|님|군|양|분|두|세|네|여러분|모두)$/;
+const HAIL=/^(안녕하[시세][요오]|안녕하십니까|안녕히?|여보시오|이보시오|이보게|저기요?|잠깐|실례합니다|실례|수고하[시세][요오])$/;
+const NAMEOF=(()=>{const m={}; NPCS.forEach(n=>m[n.ko]=n.id); return m})();
+/* 이름을 잇는 말과 여러 사람을 가리키는 말 — 부르는 자리에서만 뜻이 있다 */
+const JOIN=/^(와|과|랑|이랑|하고)$/;
+const PLURAL=/(두|세|네)\s*(분|사람)|여러분/;
+function address(text){
+  let body=String(text||''), called=[], hailed=false;
+  /* ① 첫 절이 인사말과 이름만으로 되어 있으면 그 절 전체가 부르는 말이다.
+        "안녕하세요, 카일 씨, 하웰 씨." · "안녕하세요, 카일 씨와 하웰 씨." */
+  const cut=body.search(/[.?!]/);
+  if(cut>0){
+    const toks=body.slice(0,cut).split(/[\s,·]+/).filter(Boolean)
+                   .map(t=>t.replace(/(씨|님|군|양)?(와|과|랑|이랑|하고)$/,''))  // 잇는 말
+                   .map(t=>t.replace(/(씨|님|군|양|이|아)$/,''))                 // 존칭·호격
+                   .filter(t=>t&&!HONOR.test(t)&&!JOIN.test(t));
+    if(toks.length&&toks.every(t=>HAIL.test(t)||NAMEOF[t])){
+      toks.forEach(t=>{ if(NAMEOF[t]) called.push(NAMEOF[t]); else hailed=true });
+      body=body.slice(cut+1);
+    }
+  }
+  /* ② 첫머리의 이름 나열이 쉼표로 닫히면 부르는 말이다.
+        "하웰, 당신은?" · "카일 씨와 하웰 씨, 어젯밤 어디 계셨나요?"
+     쉼표로 닫히지 않으면 주어다 — "카일과 하웰은 어디 있었소?" 는 그 둘에 대해 묻는 말이다.
+     문장 가운데 쉼표도 건드리지 않는다 — "미라, 도른을 봤소?" 의 미라는 주어다. */
+  const NM='[가-힣]{1,4}(?:\\s*(?:씨|님|군|양))?';
+  const RUN=new RegExp('^\\s*('+NM+'(?:\\s*(?:[,·]|와|과|랑|이랑|하고)\\s*'+NM+')*)\\s*[,·]\\s*');
+  const m=body.match(RUN);
+  if(m){
+    const names=m[1].split(/\s*(?:[,·]|와|과|랑|이랑|하고)\s*/)
+                    .map(t=>t.replace(/\s*(씨|님|군|양)$/,'').trim()).filter(Boolean);
+    if(names.length&&names.every(t=>NAMEOF[t])){
+      names.forEach(t=>called.push(NAMEOF[t]));
+      body=body.slice(m[0].length);
+    }
+  }
+  body=body.trim();
+  /* ③ 이름 없이 "두 분" 처럼 여럿을 부르면, 지금 그 자리에 있는 사람들을 부른 것이다.
+        장면이 이미 답을 쥐고 있다 — "여기" 를 푸는 것과 같은 규칙이다. */
+  const plural=!called.length&&PLURAL.test(body);
+  return {called:[...new Set(called)], body:body||String(text||''), hailed, plural};
+}
+
+/* ═══════════ ① 해석 ═══════════
+   Façade: 뜻을 다 파싱하지 말고 적은 수의 행위로 관대하게. Portopia: 실패를 청구하지 말 것.
+   개체는 전부 훑는다(복합 질문). 긴 표기를 먼저 지워 21시/1시 충돌을 막는다. */
+function parse(text,ignoreSocial,selfId){
+  const s=text.replace(/\s+/g,' ').trim();
+  let hours=scanAll(s,HOURPAT); const rooms=scanAll(s,ROOMPAT);
+  if(RE.askRange.test(s)&&hours.length>=2){          // 범위는 사이를 모두 채운다
+    const lo=Math.min.apply(null,hours), hi=Math.max.apply(null,hours);
+    hours=[]; for(let h=lo;h<=hi;h++) hours.push(h);
+  }
+  const persons=NPCS.filter(n=>s.includes(n.ko)).map(n=>n.id);
+  const you=RE.self.test(s);
+  /* 표지를 글자가 아니라 어간에 건다 — "본 사람"·"보신 분"·"봤소" 는 같은 동사다.
+     그리고 "있다" 가 사람을 물으면 그건 제 행적이 아니라 남의 존재를 묻는 말이다:
+       "주변에 사람이 있었소?" · "혼자 있었소?" · "증인이 될 사람이 있소?" */
+  const ms=morphs(s);
+  const PEOPLEWORD=/사람|분들|누구|누가|인기척|기척|증인|목격자|낯선|타인|일행/;
+  const asksOthers=(hasLemma(ms,'있다','없다')&&PEOPLEWORD.test(s))||/혼자/.test(s);
+  const sight=RE.sight.test(s)
+            ||hasLemma(ms,'보다','만나다','마주치다','듣다','들리다','목격하다','지나가다','드나들다')
+            ||asksOthers;
+  /* "고향은 어디요?" 는 어젯밤을 묻는 말이 아니다. 「어디/무엇」이 지난밤에 매여 있지 않으면
+     — 과거 표지도, 시각도, 장소도, 사람도 없으면 — 행적 질문으로 읽지 않는다.
+     한 낱말짜리 "어디?" 는 앞 물음을 잇는 말이므로 그대로 둔다. */
+  const PASTMARK=/었|았|셨|던|어젯밤|간밤|어제|지난밤|그때|그날|당시|경비|당직|행적|목격/;
+  const unmoored=/어디|무엇|뭐/.test(s)&&!PASTMARK.test(s)
+               &&!hasLemma(ms,'있다','가다','머물다')
+               &&!hours.length&&!rooms.length&&!persons.length
+               &&s.split(' ').length>=2;
+  const where=(RE.where.test(s)||hasLemma(ms,'있다','가다','머물다'))&&!asksOthers&&!unmoored;
+  const room=rooms[0], person=persons[0];
+  const subj=persons.filter(p=>p!==selfId)[0]||null;   // 제3자 — 부르는 이름은 뺀다
+  // 요청의 근거는 "요청 표지"이지 "개체 언급"이 아니다.
+  // 이름을 부르는 것만으로는 무엇도 묻지 않은 것이다.
+  const deicT=RE.deicT.test(s), deicR=RE.deicR.test(s), deicP=RE.deicP.test(s);
+  const asked=RE.wh.test(s)||RE.ask.test(s)||RE.qend.test(s)||deicT||deicR||deicP;
+  const qm=/\?\s*$/.test(s);   // 물음표로 끝나면 — 이름 말고 시각·장소에만 적용한다
+  const askedHard=RE.wh.test(s)||RE.ask.test(s)||deicT||deicR||deicP;  // 개체만 있는 문장에는 이쪽을 쓴다
+  /* 생략 질문 — 요청 표지도 슬롯도 없이 물음표만 남은 말. "당신은?" "미라는?"
+     앞 물음을 그대로 이어받으라는 뜻이다. 어휘 표지(이후·그때)가 없어도 성립한다. */
+  const ellip = qm && !hours.length && !rooms.length && !RE.wh.test(s) && !RE.ask.test(s)
+              && !sight && !where && !RE.after.test(s) && !deicT && !deicR && !deicP
+              && !RE.press.test(s) && !RE.quote.test(s) && !RE.reassure.test(s)
+              && (you || persons.length>0 || /^(그럼|그러면|그리고|또)/.test(s));
+  let act, weak=0;   // weak=1 이면 근거가 '개체가 있었다'뿐이다
+  /* 뚜렷한 조건절(만약·만일)은 안에 무슨 말이 들어 있든 가정이다.
+     "만약 제가 범인이라면" 이 '범인' 한 단어 때문에 의심 질문으로 읽히던 자리다. */
+  if(!ignoreSocial&&/만약|만일/.test(s)&&RE.hypo.test(s)) act='HYPOTHETICAL';
+  else if(RE.askSus.test(s))            act='ASK_SUSPECT';
+  else if(!ignoreSocial&&RE.hypo.test(s))    act='HYPOTHETICAL';
+  else if(!ignoreSocial&&RE.mood.test(s))    act='REMARK';
+  else if(!ignoreSocial&&RE.opinion.test(s)) act='OPINION';
+  else if(!ignoreSocial&&RE.greet.test(s))   act='GREET';
+  else if(RE.reassure.test(s)) act='REASSURE';
+  else if(!ignoreSocial&&RE.thanks.test(s))  act='SOCIAL';
+  // "카일이 당신을 봤다던데" — 인용이 나를 가리키면 들이대는 말이다
+  else if(RE.quote.test(s))    act=(room||you)?'PRESENT':(subj?'ASK_ABOUT':'UNKNOWN');
+  else if(RE.press.test(s))    act='PRESS';
+  else if(sight)               act=person?'ASK_ABOUT':(room?'ASK_ROOM':'ASK_SIGHTING');
+  // 들이대는 말에는 주어가 있어야 한다. 말 거는 상대의 이름은 주어가 아니라 부르는 말이다 —
+  // "경비병 카일이죠? 어젯밤에도 서고에서 경비를 섰나요?" 는 들이대는 말이 아니라 묻는 말이다.
+  else if(room&&(you||subj))   act='PRESENT';
+  else if(where)               act=(person&&!you)?'ASK_ABOUT':'ASK_WHEREABOUTS';
+  else if(askedHard&&person)       {act='ASK_ABOUT'; weak=1}
+  else if((asked||qm)&&room)       {act='ASK_ROOM'; weak=1}      // "부엌은?" — 장소는 부르는 말이 아니다
+  else if((asked||qm)&&hours.length){act='ASK_WHEREABOUTS'; weak=1} // "23시엔?" — 시각도 마찬가지
+  else if(RE.after.test(s))        act='FOLLOW_UP';
+  else if(asked&&RE.broad.test(s)) act='ASK_WHEREABOUTS';   // "어젯밤에도 …나요?" — 시간 범위 + 요청
+  else if(asked&&(deicT||deicR||deicP)) act='FOLLOW_UP';    // "그때는?" — 앞 화제를 잇는다
+  else if(ellip)               act='FOLLOW_UP';             // "당신은?" — 표지가 없어도 잇는다
+  // "다시 한 번 말해 주시오" — 무엇을 물었는지는 없지만 청하는 말이다. 버리지 않는다.
+  else if(RE.ask.test(s))      act='FOLLOW_UP';
+  else if(person)              act='GREET';
+  else                         act='UNKNOWN';
+  return {act,hours,rooms,persons,you,
+          hour:hours.length?hours[0]:null, room:room||null, person:person||null,
+          deicT:RE.deicT.test(s), deicR:RE.deicR.test(s), deicP:RE.deicP.test(s), after:RE.after.test(s),
+          broad:RE.broad.test(s), weak:!!weak,
+          // 의문사 없이 물음표로 끝나면 예/아니오를 묻는 말이다 — "어젯밤에도 경비를 섰소?"
+          yesno: RE.qend.test(s)&&!RE.wh.test(s),
+          ellipsis: ellip,
+          answer_type: RE.askAct.test(s)?'activity'
+                     : RE.askWhy.test(s)?'why'
+                     : RE.askRange.test(s)?'timerange'
+                     : RE.askWhen.test(s)?'when'
+                     : /누구|누가|누굴/.test(s)?'who'
+                     : /어디|어느 곳/.test(s)?'where' : null};
+}
+
+/* ═══════════ ② 맥락 복원 ═══════════
+   생략된 시각·장소를 직전 주제에서 되살린다. 주제가 오래됐으면 넘겨짚지 않고 되묻는다. */
+function resolve(id,f){
+  const c=G.ctx[id], T=c.topic, n=c.turns.length;
+  const freshH=(n-T.hourAt)<=2, freshR=(n-T.roomAt)<=2, freshP=(n-T.personAt)<=2;
+  const inh={hour:false,room:false,person:false};
+  let hour=f.hour, room=f.room, person=f.person;
+  if(!f.broad&&hour==null&&freshH&&T.hour!=null){hour=T.hour; inh.hour=true}
+  if(!f.broad&&room==null&&freshR&&T.room!=null&&f.act==='ASK_SIGHTING'){room=T.room; inh.room=true}
+  // 사람을 이어받는 것은 "그 사람" 을 실제로 가리켰을 때와, 인물을 묻는 말일 때다
+  if(person==null&&freshP&&T.person!=null&&(f.act==='ASK_ABOUT'||f.deicP)){person=T.person; inh.person=true}
+  // 가리키는 대상이 낡았을 때만 되묻는다
+  let clarify=null;
+  if(f.deicT&&!freshH&&f.hour==null)      clarify='time';
+  else if(f.deicR&&!freshR&&f.room==null) clarify='place';
+  else if(f.deicP&&!freshP&&f.person==null)clarify='person';
+  /* 사람을 이어받았고 "당신" 을 묻지 않았다면 그건 그 사람에 대한 물음이다.
+     ① 층이 이름을 직접 들었을 때 쓰는 규칙과 같다 — 이어받았다고 달라질 이유가 없다. */
+  let act=f.act;
+  if(act==='ASK_WHEREABOUTS'&&inh.person&&person&&!f.you) act='ASK_ABOUT';
+  return {act,hour,room,person,you:f.you,inh,clarify,hours:f.hours,rooms:f.rooms,
+          rangeRoom:f._rangeRoom||null, full:f.answer_type==='timerange'};
+}
+const sigOf=Q=>Q.act+'|'+Q.hour+'|'+Q.room+'|'+Q.person;
+
+/* ═══════════ ③ 앎의 경계 ═══════════
+   거짓말을 제외한 모든 경계는 설명된다. 설명되지 않는 침묵이 곧 단서다. */
+/* 태도(stance) — 스스로 밝힌 "말하지 않겠다"는 선.
+   사실이 아니라 발화 가능 범위만 막는다. 도전받으면 딱 한 번 접힌다. */
+/* 관계는 원인만이 아니라 '지금의 태도'로 읽혀야 한다 */
+function attitude(id,who){
+  const r=(who==='player')?(G.rel[id]&&G.rel[id].player):(G.rel[id]&&G.rel[id].npcs[who]);
+  const t=r?r.trust:0;
+  return {trust:t, cause:r?r.cause:null,
+          label:t<=-2?'적대':t<0?'경계':t>=2?'신뢰':t>0?'호의':'무심',
+          // 관계에는 지금의 태도와 거기까지 온 이력이 둘 다 있어야 한다
+          history: who==='player'?history(id,6):[]};
+}
+/* ═══════════ 겪은 일 원장 ═══════════
+   인물마다 무슨 일을 겪었는지 한 줄씩 쌓는다. 덧붙이기만 하고 지우지 않는다.
+   흩어져 있던 것(pat·pushed·reassured·toldSecret·stance·rows.born)을 대체하지 않는다 —
+   그것들은 그대로 두고, 여기에는 "무엇이 언제 왜 일어났는가"만 남긴다.
+   읽는 곳은 셋: 관계(이력+현재 태도) · 인물 패널 · 표현 프롬프트.
+   secret:true 인 줄은 어디에도 보여 주지 않는다 — 포섭은 통보되지 않는다. */
+function remember(id,kind,why,by,secret){
+  if(!G.hist) G.hist={};
+  const h=G.hist[id]=G.hist[id]||[];
+  h.push({at:G.tick,turn:G.turnNo||0,kind,why,by:by||'player',secret:!!secret});
+  if(h.length>40) h.splice(0,h.length-40);
+}
+function history(id,n){
+  return ((G.hist&&G.hist[id])||[]).filter(x=>!x.secret).slice(-(n||6));
+}
+function stanceOf(id,kind){ return G.ctx[id].stance.get(kind) }
+function yielded(id,kind){ const st=stanceOf(id,kind); return !!(st&&st.revised) }
+function setStance(id,kind,scope){
+  const c=G.ctx[id];
+  if(!c.stance.has(kind)) c.stance.set(kind,{kind,turn:c.turns.length,scope:scope||null,revised:false,said:1});
+  else c.stance.get(kind).said++;
+  return c.stance.get(kind);
+}
+function boundary(id,Q){
+  const t=N[id].t;
+  const suppressed=h=>(id===G.spy&&(h===G.theft||h===G.theft-1))||(id===G.R&&h===G.hTick);
+  if(Q.hour!=null&&suppressed(Q.hour)&&(Q.act==='ASK_SIGHTING'||Q.act==='ASK_ROOM'))
+    return {kind:'suppressed',sayable:false};
+  if(Q.act==='ASK_ROOM'&&Q.room&&Q.hour!=null&&G.truth[id][Q.hour]!==Q.room)
+    return {kind:'not-witnessed',sayable:true,hour:Q.hour,room:Q.room,mine:G.truth[id][Q.hour]};
+  if(Q.act==='ASK_ROOM'&&Q.room&&Q.hour==null&&!G.truth[id].includes(Q.room))
+    return {kind:'never-there',sayable:true,room:Q.room};      // 그 방엔 발을 들인 적이 없다
+  const yld=k=>yielded(id,k);
+    if(t.noHearsay&&!yld('hearsay')&&G.rows[id].some(r=>r.told&&(Q.hour==null||r.hour===Q.hour)&&(!Q.room||r.room===Q.room)))
+    return {kind:'hearsay-refused',sayable:true};
+  return null;
+}
+
+/* ═══════════ ④ 검색과 차감 ═══════════ */
+function relevance(Q,r){
+  let s=0;
+  if(Q.hour!=null&&r.hour===Q.hour)s+=3;
+  if(Q.room&&r.room===Q.room)s+=3;
+  if(Q.person&&r.subject===Q.person)s+=3;
+  if(r.sal==='high')s+=2;
+  return s;
+}
+function retrieve(id,Q){
+  const hs=Q.hours&&Q.hours.length>1?Q.hours:null;      // 여러 시각을 물으면 전부 답한다
+  const hF=r=>hs?hs.includes(r.hour):(Q.hour==null||r.hour===Q.hour);
+  let rows;
+  if(Q.act==='ASK_WHEREABOUTS'){ const rq=Q.rangeRoom||Q.room;   // 장소를 짚어 물으면 그 장소만
+    rows=pool(id,r=>r.kind==='self'&&hF(r)&&(!rq||r.room===rq)); }
+  else if(Q.act==='ASK_ROOM')   rows=pool(id,r=>r.kind==='saw'&&r.room===Q.room&&hF(r));
+  else if(Q.act==='ASK_ABOUT'&&Q.person===id) rows=pool(id,r=>r.kind==='self'&&hF(r));
+  else if(Q.act==='ASK_ABOUT'){
+    rows=pool(id,r=>r.kind==='saw'&&r.subject===Q.person&&hF(r),{direct:Q.person});
+    const cc=N[id], tt=cc.t;
+    if(tt.withhold&&Q.person===tt.withhold&&!yielded(id,'distrust')){   // 플레이어가 그 이름을 꺼냈다
+      const st=setStance(id,'distrust',{person:tt.withhold});
+      G._pre=(st.said===1 ? cc.v.distrust(NK[tt.withhold])+' '+cc.reason.distrust
+                          : cc.v.distrust(NK[tt.withhold]))+' ';
+    }
+  }
+  else                          rows=pool(id,r=>r.kind==='saw'&&hF(r)&&(!Q.room||r.room===Q.room));
+  return rows.sort((a,b)=>relevance(Q,b)-relevance(Q,a));
+}
+/* 이미 확립된 명제는 빼고, 사실만 알려진 목격은 "나도 봤소"로 남긴다 */
+function subtract(id,rows){
+  const g=G.ctx[id].ground, keep=[], corr=[];
+  rows.forEach(r=>{
+    if(r.kind==='self'){ if(!g.has(AT(r.subject,r.hour,r.room))) keep.push(r); return }
+    if(g.has(OBS(id,r.hour,r.subject,r.room))) return;              // 내가 이미 말했다
+    (g.has(AT(r.subject,r.hour,r.room))?corr:keep).push(r);         // 사실만 알려져 있으면 맞장구
+  });
+  return {keep,corr};
+}
+
+/* ═══════════ ⑤ 내용 계획 ═══════════ */
+function planTurn(id,Q,keep,corr,kind){
+  const c=N[id], ctx=G.ctx[id];
+  const groups=take(id,keep,kind,Q.full?99:null).groups;
+  // 넓게 물으면 사람은 요지를 말한다 — 오래 머문 곳부터. 시각별은 파고들어야 나온다.
+  if(kind==='self'&&!Q.full&&Q.hour==null) groups.sort((a,b)=>b.hours.length-a.hours.length);
+  {const byHour=[], used=new Set();
+   groups.forEach((g,i)=>{ if(used.has(i))return; byHour.push(g); used.add(i);
+     groups.forEach((h,j)=>{ if(!used.has(j)&&h.hours.join()===g.hours.join()){byHour.push(h); used.add(j)} }); });
+   groups.length=0; byHour.forEach(g=>groups.push(g));}
+  {const lt=ctx.turns[ctx.turns.length-1];
+   const rc=lt&&(G.beats-lt.atBeat)<=3?lt.pairs:new Map();
+   const hit=g=>{const h=rc.get(g.room); return h&&g.hours.every(x=>h.has(x))?0:1};
+   groups.sort((a,b)=>hit(a)-hit(b));}
+  const plan={groups:[],corro:null,refuse:null,clarify:false,exhausted:false,pairs:new Map()};
+  const emitted=new Set();   // 이번 턴에 이미 말한 시각
+  const lastTurn=ctx.turns[ctx.turns.length-1];
+  const recent=lastTurn&&(G.beats-lastTurn.atBeat)<=3?lastTurn.pairs:new Map();
+  let prev=null;
+  groups.forEach(g=>{
+    const drop={hour:false,room:false};
+    // 플레이어가 되묻지 않고 물려받은 시각/장소는 이미 공유된 맥락이므로 말하지 않는다
+    if(Q.inh.hour&&g.hours.length===1&&g.hours[0]===Q.hour) drop.hour=true;
+    if(Q.inh.room&&g.room===Q.room) drop.room=true;
+    if(Q.act==='ASK_ROOM'&&g.room===Q.room) drop.room=true;
+    let additive=false;
+    if(prev&&prev.room===g.room&&prev.hours.join()===g.hours.join()){ additive=true; drop.hour=drop.room=true }
+    else if(prev&&prev.hours.join()===g.hours.join()){ drop.hour=true }   // 시각은 같고 장소만 다르면 시각만 생략
+    else if(prev&&prev.room===g.room){ drop.room=true }                   // 장소가 이미 세워졌으면 시각만
+    // 방금 전 발화에서 세운 시각·장소라면 다시 말하지 않는다
+    // 직전 발화가 이미 세운 시각·장소면 되풀이하지 않는다. 첫 묶음에만 — 그래야 모호해지지 않는다.
+    const ref=(c.style&&c.style.ref)||'eager';
+    const rh=recent.get(g.room);
+    const lastAct=lastTurn&&lastTurn.Q?lastTurn.Q.act:null;
+    let cont=!additive&&plan.groups.length===0&&rh&&g.hours.every(h=>rh.has(h));
+    if(cont&&ref==='reluctant'&&lastAct!==Q.act) cont=false;
+    if(!cont&&ref==='immediate'&&plan.groups.length===0&&ctx.topic.room===g.room) cont='room';
+    if(cont==='room'||(cont&&ref!=='reluctant')){ drop.hour=drop.room=true; additive=(kind==='saw') }
+    else if(cont){ drop.hour=true }
+    g.hours.forEach(h=>emitted.add(h));
+    if(!plan.pairs.has(g.room))plan.pairs.set(g.room,new Set());
+    g.hours.forEach(h=>plan.pairs.get(g.room).add(h));
+    plan.groups.push({g,drop,additive,kind});
+    prev=g;
+  });
+  if(corr.length) plan.corro=corr;
+  return plan;
+}
+
+/* ═══════════ ⑥ 표현 ═══════════ */
+function realize(id,Q,plan){
+  const v=N[id].v, t=N[id].t, out=[];
+  G.approvedBy=G.approvedBy||{};
+  G.approved={npc:id, act:Q.act, answer_type:Q.answer_type||null, refuse:plan.refuse?plan.refuse.kind:null,
+    facts:plan.groups.map(({g,kind})=>({kind, hours:g.hours.map(h=>HOURS[h]), room:RKO[g.room],
+      who:(g.who||[]).map(x=>NK[x])})),
+    corro:(plan.corro||[]).map(r=>NK[r.subject])};
+  G.approvedBy[id]=G.approved;                 // 사람마다 따로 — 한 발화에 둘이 답할 수 있다
+  if(plan.clarify) return v.ask;
+  if(plan.refuse){
+    const b=plan.refuse;
+    if(b.kind==='not-witnessed') return v.notw(spanSaw([b.hour]),RKO[b.room],RKO[b.mine]);
+    if(b.kind==='never-there')   return v.notThere(RKO[b.room]);
+    const key=b.kind==='hearsay-refused'?'hearsay':'distrust';
+    const st=setStance(id,key,b.who?{person:b.who}:null);
+    const body=b.kind==='hearsay-refused'?v.nohear:v.distrust(NK[b.who]);
+    if(st.said===1){ const why=N[id].reason[key]; return body+(why?' '+why:'') }
+    return v.again+' '+body;
+  }
+  plan.groups.forEach(({g,drop,additive,kind})=>{
+    if(kind==='self'){
+      g.rows.forEach(r=>addCard({kind:'self',subject:r.subject,room:r.room,hour:r.hour,by:id,mark:'●',conf:1}));
+      out.push(drop.hour&&drop.room?v.onlywho(RKO[g.room]):v.loc(spanLoc(g.hours),RKO[g.room]));
+      return;
+    }
+    const cf=Math.min(...g.rows.map(r=>conf(id,r)));
+    const who=andList(g.who.map(x=>NK[x]));
+    if(cf<.34){ out.push(v.blank(spanSaw(g.hours))); return }
+    if(cf<.66){ G.vague+=g.rows.length; out.push(v.hazy(spanSaw(g.hours),RKO[g.room])); return }
+    const blur=r=>!!(t.blurSource&&r.told);
+    g.rows.forEach(r=>{
+      addCard({kind:'saw',subject:r.subject,room:r.room,hour:r.hour,by:id,
+        mark:r.told&&!blur(r)?'·':'○',conf:cf,told:r.told,blurred:blur(r)});
+      witnessSelf(id,r);                                    // 본 사람은 그 방에 있었다
+    });
+    const src=g.rows.find(r=>r.told&&!blur(r));
+    let line;
+    if(additive)                 line=v.also(who);
+    else if(drop.hour&&drop.room)line=v.onlywho(who);
+    else if(drop.hour)           line=v.saw('',RKO[g.room],who).replace(/^\s+/,'');
+    else if(drop.room)           line=v.sawT(spanSaw(g.hours),who);
+    else                         line=v.saw(spanSaw(g.hours),RKO[g.room],who);
+    out.push(line+(src?' '+src.told+'한테 들은 얘기지만.':''));
+  });
+  if(plan.corro) out.push(v.corro(andList([...new Set(plan.corro.map(r=>NK[r.subject]))])));
+  const ctxF=G.ctx[id], fr=(N[id].style||{}).frame;
+  // 말버릇이 답의 종류를 가리면 안 된다 — 목격에 대한 수식은 목격을 물었을 때만
+  const frameFits = !(fr==='justify' && Q.act!=='ASK_SIGHTING' && Q.act!=='ASK_ABOUT' && Q.act!=='ASK_ROOM');
+  if(out.length&&fr&&fr!=='bare'&&frameFits&&!ctxF.framed.has(Q.act)){
+    ctxF.framed.add(Q.act);
+    if(fr==='justify'||fr==='aside') out[0]=v.frameL+out[0];
+    else out[out.length-1]=out[out.length-1]+v.frameL;
+  }
+  if(!out.length){
+    if(plan.exhausted) out.push(v.dry);
+    else if(Q.act==='ASK_ROOM'&&Q.room){        // 방이 없으면 방에 대해 말할 수 없다
+      // 「아무도 없었다」는 그 방에 있었던 사람만 할 수 있는 말이다
+      const mineHours=[]; G.truth[id].forEach((r,h)=>{ if(r===Q.room)mineHours.push(h) });
+      const canSee = Q.hour!=null ? (G.truth[id][Q.hour]===Q.room) : mineHours.length>0;
+      if(canSee) out.push(v.empty(Q.hour!=null?spanSaw([Q.hour]):spanSaw(mineHours),RKO[Q.room]));
+      else if(Q.hour!=null) out.push(v.notw(spanSaw([Q.hour]),RKO[Q.room],RKO[G.truth[id][Q.hour]]));
+      else out.push(v.notThere(RKO[Q.room]));
+    }
+    else if(Q.act==='ASK_ABOUT') out.push(v.nada(NK[Q.person]));
+    else if(Q.act==='ASK_WHEREABOUTS'&&Q.room) out.push(v.notThere(RKO[Q.room]));
+    else out.push(v.none);
+  }
+  return out.join(' ');
+}
+
+/* ═══════════ ⑦ 기록 ═══════════ */
+function commit(id,Q,plan){
+  const ctx=G.ctx[id], n=ctx.turns.length, g=ctx.ground, said=[];
+  plan.groups.forEach(({g:grp,kind})=>grp.rows.forEach(r=>{
+    if(kind==='self') g.set(AT(r.subject,r.hour,r.room),{by:'npc',turn:n,via:'self',conf:1,rows:[r.id]});
+    else{
+      g.set(OBS(id,r.hour,r.subject,r.room),{by:'npc',turn:n,via:r.told?'hearsay':'witnessed',conf:conf(id,r),rows:[r.id]});
+      g.set(AT(r.subject,r.hour,r.room),{by:'npc',turn:n,via:r.told?'hearsay':'witnessed',conf:conf(id,r),rows:[r.id]});
+      groundWitnessSelf(ctx,id,r,n);
+    }
+    said.push(r.id);
+  }));
+  (plan.corro||[]).forEach(r=>{
+    g.set(OBS(id,r.hour,r.subject,r.room),{by:'npc',turn:n,via:'witnessed',conf:1,rows:[r.id]});
+    witnessSelf(id,r); groundWitnessSelf(ctx,id,r,n);       // "나도 봤소" 도 자기 위치를 건다
+  });
+  const T=ctx.topic;
+  // 물려받은 슬롯은 주제를 "새로" 만들지 않는다 — 그러지 않으면 주제가 영원히 낡지 않는다
+  /* 화제는 묻는 쪽만 만드는 것이 아니다. 답한 쪽도 만든다 —
+     "23시에 안뜰에서 벤을 봤소" 다음의 "그때·거기·그 사람" 은 23시·안뜰·벤을 가리킨다.
+     다만 답이 여럿을 늘어놓았다면 가리키는 말은 진짜로 모호하므로 넘겨짚지 않는다. */
+  const G0=plan.groups||[];
+  if(Q.hour!=null&&!Q.inh.hour){T.hour=Q.hour; T.hourAt=n}
+  // 시각은 목격을 말했을 때만 답에서 가져온다 — 목격은 한 순간에 매여 있고, 행적은 밤 전체에 걸쳐 있다
+  else if(Q.hour==null&&Q.act==='ASK_SIGHTING'&&G0.length===1&&G0[0].g.hours.length===1)
+    {T.hour=G0[0].g.hours[0]; T.hourAt=n}
+  if(Q.room&&!Q.inh.room){T.room=Q.room; T.roomAt=n}
+  else if(!Q.room&&G0.length){T.room=G0[0].g.room; T.roomAt=n}
+  if(Q.person&&!Q.inh.person){T.person=Q.person; T.personAt=n}
+  else if(Q.person==null){
+    const seen=[];
+    G0.forEach(({g:grp,kind})=>{ if(kind!=='self')(grp.who||[]).forEach(w=>{if(seen.indexOf(w)<0)seen.push(w)}) });
+    if(seen.length===1){T.person=seen[0]; T.personAt=n}
+  }
+  ctx.turns.push({Q,said,atBeat:G.beats,pairs:plan.pairs||new Map(),refused:plan.refuse?plan.refuse.kind:null});
+  ctx.askedQ.set(sigOf(Q),n);
+}
+
+
+/* ═══════════ LLM 연결 지점 (지금은 목업) ═══════════
+   실제 모델이 오면 interpret() 하나만 갈아 끼운다. 계약:
+     in : (npcId, 플레이어 발화)
+     out: {acts, slots, topic, tone, implied, case_relevance, social_draft}
+   라우터·검사기·엔진 경로는 그대로 둔다.
+
+   목업의 한계는 분명하다 — 뜻을 이해하지 못하고 표지를 본다.
+   진짜인 것은 이음매(경로·검사·기록 금지)이고, 목업이 대신하는 것은 이해뿐이다. */
+function socialFeatures(id,text){
+  const s=text.replace(/\s+/g,' ').trim();
+  const persons=NPCS.filter(n=>s.includes(n.ko)).map(n=>n.id);
+  const other=persons.find(x=>x!==id)||null;
+  return {
+    greet:RE.greet.test(s), thanks:RE.thanks.test(s), hypo:RE.hypo.test(s),
+    mood:RE.mood.test(s), opinion:RE.opinion.test(s), question:/\?/.test(s),
+    about:other,
+    topic:RE.mood.test(s)?'상대의 상태':RE.hypo.test(s)?'가정':RE.opinion.test(s)?'인물 감정'
+         :RE.greet.test(s)?'인사':RE.thanks.test(s)?'사례':'잡담',
+    tone:RE.hypo.test(s)?'떠보는':RE.mood.test(s)?'염려하는':RE.greet.test(s)?'예의':'가벼운',
+    implied:RE.hypo.test(s)?'반응을 떠보려 함':RE.opinion.test(s)?'관계를 캐려 함':null
+  };
+}
+/* 전략 × 인물 조각 — 무엇이 들어오든 전략 하나에는 닿는다 */
+function draftSocial(id,f){
+  const v=N[id].v, sv=N[id].v.sv, ctx=G.ctx[id];
+  if(f.greet) return ctx.greeted ? v.greet2 : v.greet;
+  if(f.thanks) return v.thanks;
+  if(f.mood) return sv.mood;
+  if(f.hypo) return sv.hypo;
+  if(f.opinion&&f.about){                       // 관계는 엔진이 쥔 상태에서 읽는다 (증거가 아니다)
+    const r=G.rel[id]&&G.rel[id].npcs[f.about];
+    const t=r?r.trust:0;
+    const line=t<0?sv.relN:t>0?sv.relP:sv.relZ;
+    const why=(t<0&&N[id].reason&&N[id].reason.distrust&&f.about===N[id].t.withhold)?' '+N[id].reason.distrust:'';
+    return NK[f.about]+sv.relQ+line+why;
+  }
+  // "당신은 어떤 사람이오?" — 이미 있는 화행 갈래를 쓴다. 새 점수판을 놓지 않는다.
+  if(f.opinion&&!f.about&&N[id].lore) return N[id].lore.me;
+  /* 사건과 무관한 물음도 물음이다 — 맞장구로 뭉개면 사람이 아니다.
+     한 번은 왜 그것을 묻는지 되묻는다 (실제로 말해질 때 socialTurn 이 표시한다). */
+  if(f.question&&v.whyAsk&&!ctx.askedWhy) return v.whyAsk;
+  // 스몰토크는 스몰토크로 받는다. 격만 맞추고, 본론으로 끌고 가지 않는다.
+  const n=(ctx.social||0), st=(N[id].style||{}).smalltalk||'flat';
+  const line=sv.acks[n%sv.acks.length];
+  return (st==='brisk'&&n===0) ? line+' '+sv.redirect : line;   // 되돌리기는 성격일 때만
+}
+/* 사교 응답은 사실을 만들 수 없다 — 출력에도 같은 개체 검사기를 들이댄다 */
+/* 인물들의 과거·비밀에서 뽑은 민감 어휘. 승인되지 않은 내용이 새는지 보는 그물. */
+const SENSITIVE=(()=>{
+  // 엔진이 승인된 사실을 말할 때 쓰는 어휘를 먼저 모은다 — 이건 민감어가 아니다
+  const allowed=[];
+  NPCS.forEach(n=>Object.values(n.v||{}).forEach(x=>{
+    if(typeof x==='string') allowed.push(x);
+    else if(typeof x==='function'){ try{ allowed.push(String(x('21시엔','부엌','미라'))) }catch(e){} }
+  }));
+  ROOMS.forEach(r=>allowed.push(r.ko)); HOURS.forEach(h=>allowed.push(h));
+  NPCS.forEach(n=>allowed.push(n.ko));
+  // 인물 카드는 공개된 말이다 — 비밀이 아니므로 민감어 그물에서 뺀다
+  NPCS.forEach(n=>Object.values(n.lore||{}).forEach(x=>allowed.push(x)));
+  const allowedText=allowed.join(' ');
+  const out=new Set();
+  NPCS.forEach(n=>{
+    const texts=[n.secret||''].concat(Object.values(n.reason||{}))
+      .concat((n.profile||[]).filter(x=>x[0]!=='사람됨').map(x=>x[1]));
+    texts.join(' ').split(/[\s,.·…"“”'’()!?]+/).forEach(w=>{
+      const t=w.replace(/[을를이가은는에서의로와과도만](?=$)/,'');
+      if(t.length>=2 && !allowedText.includes(t)) out.add(t);   // 엔진이 안 쓰는 말만
+    });
+  });
+  return [...out];
+})();
+function leaksSecret(text,approvedText){
+  for(const t of SENSITIVE) if(text.includes(t)&&!approvedText.includes(t)) return t;
+  return null;
+}
+/* 사건 응답 검사 — 승인된 시각·장소·인물 밖의 것을 말하면 거부한다 */
+function validateCase(id,text,ap){
+  // 게임의 재미는 짧고 입에 붙는 말에서 나온다. 장황하면 버리고 템플릿을 쓴다 —
+  // 템플릿 최장이 86자였으니 160자는 "말이 아니라 글을 썼다"는 뜻이다.
+  if(!text||text.length>160) return false;
+  if(/[A-Za-z]{3,}/.test(text)) return false;          // 모델이 흘린 이물질
+  const okH=new Set(), okR=new Set(), okP=new Set([NK[id]]);
+  (ap.facts||[]).forEach(f=>{ (f.hours||[]).forEach(h=>okH.add(h)); if(f.room)okR.add(f.room);
+                              (f.who||[]).forEach(w=>okP.add(w)) });
+  (ap.corro||[]).forEach(w=>okP.add(w));
+  for(const h of (text.match(/\d\d시/g)||[])) if(!okH.has(h)) return false;
+  const alias=r=>[r.ko].concat(r.ko.includes(' ')?r.ko.split(' '):[]);
+  for(const r of ROOMS) for(const a of alias(r))
+    if(a.length>1&&text.includes(a)&&!okR.has(r.ko)) return false;
+  for(const n of NPCS) if(text.includes(n.ko)&&!okP.has(n.ko)) return false;
+  // 승인되지 않은 내용(과거·비밀)이 섞이면 거부한다 — 검사기는 금지 목록이 아니라 허가 목록이다
+  const leak=leaksSecret(text, JSON.stringify(ap));
+  if(leak) return false;
+  // 허용된 사실을 하나라도 빠뜨리면 거부한다 — 인물 대사만 읊는 것을 막는다
+  for(const f of (ap.facts||[])){
+    if(f.room&&!text.includes(f.room)&&!alias(ROOMS.find(r=>r.ko===f.room)||{ko:f.room}).some(a=>text.includes(a))) return false;
+    for(const w of (f.who||[])) if(!text.includes(w)) return false;
+  }
+  return true;
+}
+function validateSocial(id,text){
+  if(!text||text.length>160) return false;                 // 장황하면 버린다
+  if(/[A-Za-z]{3,}/.test(text)) return false;              // 모델이 흘린 이물질
+  if(/사건|첩자|문서/.test(text)) return false;             // 잡담에 사건을 끌어들이지 않는다
+  if(leaksSecret(text,'')) return false;                    // 과거·비밀을 흘리지 않는다
+  const hrs=scanAll(text,HOURPAT), rms=scanAll(text,ROOMPAT);
+  const ppl=NPCS.filter(n=>text.includes(n.ko)).map(n=>n.id);
+  if(hrs.length&&(rms.length||ppl.length)) return false;          // AT/OBS 모양의 주장
+  if(/봤|목격|있었/.test(text)&&ppl.length&&rms.length) return false;
+  return true;
+}
+/* ═══════════ 해석·표현 공급자 어댑터 ═══════════
+   게임은 지금까지처럼 동기 mock 을 쓴다. ollama 공급자는 같은 계약을 비동기로 구현하며,
+   A/B 비교용으로만 호출된다. 엔진(사실·기억·출처·관계·풀이가능성)은 어느 쪽에도 열려 있지 않다. */
+/* 대화 기록 — 인물마다 따로 쌓는다. 엔진은 이것을 읽지 않는다(사실이 아니라 말이다).
+   《밤의 인랑》(팀원의 마피아 게임)에서 가져온 것: 그 게임의 자연스러움은 프롬프트 기교가 아니라
+   ① 공개 로그 전문을 매 턴 넣고 ② 큰 모델에게 맡긴 데서 나온다. 여기서는 표현 단계에만 그것을 준다. */
+function chatlog(id){ const c=G.ctx[id]; return (c&&c.chat)||[] }
+function chatPush(id,u,a){
+  const c=G.ctx[id]; if(!c) return;
+  if(!c.chat) c.chat=[];
+  if(u||a) c.chat.push({u:u||'',a:a||''});
+  if(c.chat.length>24) c.chat.splice(0,c.chat.length-24);
+}
+function chatText(id,n){
+  const rows=chatlog(id).slice(-(n||6));
+  if(!rows.length) return '';
+  return rows.map(r=>'심문자: '+r.u+'\n'+NK[id]+': '+r.a).join('\n');
+}
+/* JSON 을 관대하게 읽는다 — 모델이 앞뒤에 말을 붙여도 살린다 */
+function jparse(s){
+  try{ return JSON.parse(s) }catch(e){}
+  const i=s.indexOf('{'); if(i<0) throw new Error('JSON 아님');
+  let d=0; for(let k=i;k<s.length;k++){ if(s[k]==='{')d++; else if(s[k]==='}'){ d--; if(!d) return JSON.parse(s.slice(i,k+1)) } }
+  throw new Error('JSON 아님');
+}
+/* 해석 결과의 모양을 모델에게 강제한다 — 이름을 지어내면 스키마가 막는다 */
+const INTERP_SCHEMA={type:'object',additionalProperties:false,
+  required:['acts','answer_type','case_relevance','social_draft'],
+  properties:{
+    acts:{type:'array',items:{type:'string',enum:['GREET','SOCIAL','REMARK','HYPOTHETICAL','OPINION',
+      'ASK_WHEREABOUTS','ASK_SIGHTING','ASK_ROOM','ASK_ABOUT','FOLLOW_UP','PRESENT','PRESS','REASSURE','UNKNOWN']}},
+    answer_type:{type:'string',enum:['where','who','when','timerange','why','activity','relation','confirm','none']},
+    case_relevance:{type:'number'},
+    social_draft:{type:'string'},
+    slots:{type:'object',additionalProperties:false,properties:{
+      hours:{type:'array',items:{type:'integer'}},
+      room:{type:'string',enum:['archive','court','kitchen','gate','yard','quarters']},
+      person:{type:'string',enum:['kyle','mira','dorn','howell','ben']}}}}};
+const ASKACT=['ASK_WHEREABOUTS','ASK_SIGHTING','ASK_ROOM','ASK_ABOUT','FOLLOW_UP'];
+const H24=[21,22,23,0,1,2];
+/* 모델의 해석을 결정적 파서 위에 얹는다 — 한 방향으로만.
+   파서가 "들이대는 말"로 오독한 것을 질문으로 되돌리고, 비어 있는 슬롯만 채운다.
+   질문을 들이대는 말로 바꾸는 반대 방향은 막는다(인내도를 잘못 깎는 쪽이라서). */
+function mergeSlots(f,o){
+  const g=Object.assign({},f);
+  const acts=Array.isArray(o.acts)?o.acts:[];
+  const a=acts.filter(x=>x!=='GREET'&&x!=='SOCIAL')[0];
+  if(a&&ASKACT.indexOf(a)>=0&&['PRESENT','UNKNOWN','SMALL_TALK','GREET','REMARK','HYPOTHETICAL','OPINION','SOCIAL'].indexOf(g.act)>=0) g.act=a;
+  if(o.answer_type&&o.answer_type!=='none') g.answer_type=o.answer_type;
+  const s=o.slots||{};
+  const hrs=(s.hours||[]).map(h=>H24.indexOf(Number(h))).filter(i=>i>=0);
+  if(hrs.length&&!(g.hours||[]).length){ g.hours=hrs; g.hour=hrs[0] }
+  if(s.room&&g.room==null&&RKO[s.room]) g.room=s.room;
+  if(s.person&&g.person==null&&NK[s.person]) g.person=s.person;
+  return g;
+}
+const LLM = {
+  provider:'mock', endpoint:'http://localhost:11434', model:null, key:null, noSchema:false,
+  pre:new Map(),
+  use(p,opt){ LLM.provider=p; opt=opt||{};
+    if(opt.model)LLM.model=opt.model; if(opt.endpoint)LLM.endpoint=opt.endpoint;
+    if(opt.key!==undefined)LLM.key=opt.key; LLM.noSchema=false; },
+  on(){ return LLM.provider!=='mock' },
+  big(){ return LLM.provider==='anthropic'||LLM.provider==='openai' },   // 지시를 지키는 크기의 모델
+  /* ── 한 번의 왕복. 공급자 차이는 오직 여기서만 흡수한다 ──
+     계약: (시스템문, 사용자문, JSON스키마|null) → 문자열 */
+  async chat(sys,user,schema){
+    const p=LLM.provider;
+    if(p==='anthropic'){
+      const oc={};
+      if(!/haiku/.test(LLM.model||'')) oc.effort='low';              // 대사 한 줄에 깊은 사고는 필요 없다
+      if(schema&&!LLM.noSchema) oc.format={type:'json_schema',schema:schema};
+      const body={model:LLM.model,max_tokens:2000,system:sys,messages:[{role:'user',content:user}]};
+      if(Object.keys(oc).length) body.output_config=oc;
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+        headers:{'content-type':'application/json','x-api-key':LLM.key,
+                 'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify(body)});
+      if(!r.ok){
+        if(r.status===400&&schema&&!LLM.noSchema){ LLM.noSchema=true; return LLM.chat(sys,user,schema) }
+        throw new Error('anthropic '+r.status+' '+(await r.text()).slice(0,120));
+      }
+      const j=await r.json();
+      if(j.stop_reason==='refusal') throw new Error('모델이 응답을 거부했다');
+      return (j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+    }
+    if(p==='openai'){                                                 // OpenAI 호환 엔드포인트(SAM·라우터 포함)
+      const body={model:LLM.model,messages:[{role:'system',content:sys},{role:'user',content:user}],
+                  temperature:0,max_tokens:2000};
+      if(schema&&!LLM.noSchema) body.response_format={type:'json_object'};
+      const r=await fetch(LLM.endpoint.replace(/\/$/,'')+'/chat/completions',{method:'POST',
+        headers:Object.assign({'content-type':'application/json'},LLM.key?{authorization:'Bearer '+LLM.key}:{}),
+        body:JSON.stringify(body)});
+      if(!r.ok) throw new Error('openai '+r.status);
+      const j=await r.json();
+      return ((j.choices||[])[0]||{}).message.content.trim();
+    }
+    /* ollama */
+    const body={model:LLM.model,stream:false,options:{temperature:0},
+                messages:[{role:'system',content:sys},{role:'user',content:user}]};
+    if(schema) body.format='json';
+    const r=await fetch(LLM.endpoint+'/api/chat',{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok) throw new Error('ollama '+r.status);
+    return (await r.json()).message.content.trim();
+  },
+  /* 해석기 계약: (npcId, 발화) → {acts,slots,topic,tone,implied,answer_type,case_relevance,social_draft} */
+  async interpretAsync(id,text){
+    if(!LLM.on()) return interpret(id,text);
+    const sys=[
+'너는 한국어 추리게임의 대화 해석기다. 플레이어 발화를 분석해 JSON 하나만 출력한다. 사실을 만들지 않는다.',
+'',
+'acts: ["GREET","SOCIAL","REMARK","HYPOTHETICAL","OPINION","ASK_WHEREABOUTS","ASK_SIGHTING","ASK_ROOM","ASK_ABOUT","FOLLOW_UP","PRESENT","PRESS","REASSURE","UNKNOWN"] 중에서만 고른다(복수 가능).',
+'answer_type: "where"|"who"|"when"|"timerange"|"why"|"activity"|"relation"|"confirm"|"none"',
+'  "뭘 했나요/뭐 하고 있었나요" 처럼 한 일을 묻는 것은 activity 다.',
+'case_relevance: 어젯밤 서고 도난 사건(행적·목격·시각·장소)을 실제로 묻는가. 0.0~1.0.',
+'  인사/잡담/농담/개인적 언급/가정/감정질문 = 0.05.  행적·목격·시각·장소를 묻는 것 = 0.9.',
+'  한 문장에 인사와 질문이 같이 있으면 질문 쪽을 따라 0.9.',
+'social_draft: case_relevance 가 낮을 때만 쓰는 짧은 한국어 응대 한 문장. 사실은 절대 말하지 않는다.',
+'slots.hours 는 언급된 시각을 24시간 정수로(21시→21, 자정→0). 범위면 시작과 끝을 모두 넣는다.',
+'',
+'예)',
+'"안녕하세요, 미라 씨?" → {"acts":["GREET"],"answer_type":"none","case_relevance":0.05,"social_draft":"네, 안녕하세요."}',
+'"안녕하세요. 어젯밤에도 경비를 서셨나요?" → {"acts":["GREET","ASK_WHEREABOUTS"],"answer_type":"where","case_relevance":0.9,"social_draft":""}',
+'"21시부터 02시까지 어디 있었는지 시간별로" → {"acts":["ASK_WHEREABOUTS"],"answer_type":"timerange","slots":{"hours":[21,22,23,0,1,2]},"case_relevance":0.9,"social_draft":""}',
+'"그 이후에 02시까지는?" → {"acts":["FOLLOW_UP"],"answer_type":"timerange","case_relevance":0.9,"social_draft":""}',
+'"만약 제가 범인이라면 어떻게 하시겠어요?" → {"acts":["HYPOTHETICAL"],"answer_type":"none","case_relevance":0.05,"social_draft":"가정은 하지 않겠소."}',
+'"달이 참 밝군요" → {"acts":["REMARK"],"answer_type":"none","case_relevance":0.05,"social_draft":"그렇군요."}'
+].join('\n');
+    const hist=chatText(id,4);
+    const user=(hist?'[직전 대화 — 생략된 말을 여기서 되살려라]\n'+hist+'\n\n[이번 발화]\n':'')+text;
+    const out=await LLM.chat(sys,user,INTERP_SCHEMA);
+    const o=jparse(out);
+    const base=interpret(id,text);                       // 슬롯 보강용 결정적 기준
+    return Object.assign({},base,o,{_f:mergeSlots(base._f,o),_llm:true});
+  },
+  /* 표현기 계약: (npcId, 승인된 plan 요약) → 한 문장. 주어진 사실 밖의 것을 말하면 거부된다. */
+  async realizeAsync(id,approved){
+    if(!LLM.on()) return null;
+    const n=N[id];
+    const say=k=>{ try{ const x=n.v[k]; return typeof x==='function'?x('21시엔','부엌','미라'):x }catch(e){ return '' } };
+    const hist=chatText(id,6);
+    const sys=[
+'너는 한국어 추리게임의 등장인물이다. 아래 "허용된 사실"만 써서 그 인물답게 한 번만 말한다.',
+'이건 글이 아니라 **입으로 하는 말**이다. 심문받는 사람이 실제로 낼 법한 소리로 짧게 답한다.',
+'규칙:',
+'1. 허용된 사실에 없는 시각·장소·인물을 절대 새로 만들지 않는다.',
+'2. 묻지 않은 것을 덧붙이지 않는다. 원문이 담은 내용만 자연스럽게 다시 말한다.',
+'2-1. **원문 앞머리의 인사·되받는 말은 반드시 살려라.** 인사를 받았으면 인사로 먼저 받고,',
+'     예/아니오를 묻는 말이면 그 물음을 한 번 받아 준 뒤에 사실을 말한다.',
+'     사실만 통보하듯 던지면 안 된다 — 대답이 아니라 통보가 된다.',
+'3. **장소 이름과 사람 이름은 허용된 그대로 적는다.** "거기" "그 사람"으로 줄이면 안 된다.',
+'4. 시각은 줄여도 된다. 직전 대화에 이미 나온 시각은 "그때"로 받아라.',
+'   "21시"를 "밤 아홉시쯤"처럼 사람 말로 바꿔도 좋다.',
+'5. **한 문장. 길어야 두 문장.** 40자 안팎을 넘기지 마라.',
+'6. 목록을 낭독하지 마라. 여러 시각이 있으면 시간 순서대로 한 흐름으로 잇는다.',
+'7. 문어체·설명체·따옴표·이모지·머리말 금지. 대사 한 덩어리만 출력한다.',
+'8. 아래 말투 예의 어미와 리듬을 그대로 쓴다. 인물이 바뀐 것처럼 들리면 안 된다.',
+'',
+'인물: '+n.ko+' ('+n.job+')',
+(n.rules?'성격: '+n.rules.join(' / '):''),
+'말투 예:',
+'  '+say('loc'),
+'  '+say('saw'),
+'  '+say('none'),
+/* 인물 카드는 매 턴 그대로 실린다 — 무엇을 꺼낼지 고르는 계산은 하지 않는다.
+   고르는 것은 모델의 일이다. 여기서 점수를 매기기 시작하면 그게 곧 튀는 원인이 된다. */
+(n.lore?'[인물 카드 — 늘 지니고 있는 것]\n'+
+  Object.values(n.lore).map(x=>'  '+x).join('\n'):''),
+(approved&&approved.상황==='가벼운 대화'
+  ? '인물 카드에 적힌 것은 말해도 된다. 다만 어젯밤 사건과 엮지 마라.'
+  : '인물 카드는 말투와 태도에만 써라. 카드의 내용을 사건의 사실처럼 말하지 마라.'),
+'주의: 인물의 비밀과 어젯밤 행적은 카드에 없다. 아는 척하지 마라.',
+'',
+(hist?'[직전 대화 — 흐름을 이어라]\n'+hist+'\n':''),
+(function(){ const H=history(id,4);
+  return H.length?'[오늘 겪은 일 — 태도에만 쓴다. 사실로 말하지 마라]\n'+
+    H.map(x=>'  '+x.kind+': '+x.why).join('\n')+'\n':'' })(),
+'가장 중요: 허용된_사실의 **장소와 사람 이름은 하나도 빠뜨리지 마라** — 빠지면 그 대사는 버려진다.',
+'시각은 빠뜨려도 되고 사람 말로 바꿔도 된다.',
+'인물 소개 문구를 그대로 읊지 마라. 질문에 대한 답을 해라.'
+].filter(x=>x).join('\n');
+    return await LLM.chat(sys,JSON.stringify(approved),null);
+  },
+  async probe(){
+    try{ const r=await fetch(LLM.endpoint+'/api/tags'); if(!r.ok)return{ok:false,reason:'HTTP '+r.status};
+      const j=await r.json(); return {ok:true,models:(j.models||[]).map(m=>m.name)}; }
+    catch(e){ return {ok:false,reason:String(e.message||e)}; }
+  }
+};
+
+function interpret(id,text){
+  const pre=LLM.pre.get(id+'|'+text);          // 비동기로 먼저 받아 둔 해석이 있으면 그것을 쓴다
+  if(pre) return pre;
+  const A=address(text);                        // ⓪ 부르는 이름을 걷어낸 뒤에 읽는다
+  const src=A.body.replace(RE.conj,'');         // "그렇다면," 같은 이음말은 뜻이 아니라 이음이다
+  const fSocial=parse(src,false,id);            // 사교 우선
+  const fCase=parse(src,true,id);               // 사교를 무시했을 때
+  const feat=socialFeatures(id,src);
+  if(A.hailed) feat.greet=true;
+  // 사교 표지가 곧 해석이다 — 개체가 있다는 이유만으로 사건 질문이 되지 않는다
+  const soc=fSocial.act;
+  /* 사교 표지 하나가 사건 증거를 통째로 덮지 못하게 한다.
+     시각·장소를 짚고 무엇을 물었는지가 분명하면, 그것이 이 문장의 뜻이다.
+     "그렇다면 21시부터 02시까지 어디에 계셨는지 시간대별로" 가
+     '가정' 한 글자에 지워지던 자리다. */
+  const strong=(fCase.hours&&fCase.hours.length)||(fCase.rooms&&fCase.rooms.length)||!!fCase.answer_type;
+  const caseful = (soc==='HYPOTHETICAL'&&!strong) ? false
+                // 관계를 묻는 말이 "이어 묻기" 로 둔갑하면 엉뚱한 목격담이 나온다.
+                // 사교 표지가 뚜렷한데 사건 쪽 근거가 이어받기뿐이면 사교가 뜻이다.
+                : ((soc==='REMARK'||soc==='OPINION')&&(fCase.weak||fCase.act==='FOLLOW_UP')) ? false
+                : OBLIG[fCase.act]!=='ack';
+  const acts=[]; if(feat.greet)acts.push('GREET');
+  acts.push(caseful?fCase.act:fSocial.act);
+  return {
+    acts, slots:{hour:fCase.hour,room:fCase.room,person:fCase.person,
+                 hours:fCase.hours,rooms:fCase.rooms,persons:fCase.persons,you:fCase.you},
+    topic:feat.topic, tone:feat.tone, implied:feat.implied, answer_type:fCase.answer_type,
+    case_relevance: caseful?0.9:0.05,
+    social_draft: draftSocial(id,feat),
+    _f: caseful?fCase:fSocial, _feat:feat, _addr:A
+  };
+}
+/* 사교 경로 — 검색도, 카드도, 기록도, 시간도 없다 */
+function socialTurn(id,I){
+  const ctx=G.ctx[id], c=N[id], v=c.v, utter=G.utter||'';
+  /* ① 무례한 말은 받아 주지 않는다. 그 사실을 짚고, 되풀이하면 입을 닫는다.
+     사실도 시계도 건드리지 않는다 — 이건 화행이지 심문이 아니다. */
+  if(RE.abuse.test(utter)&&v.rebuke){
+    ctx.rude=(ctx.rude||0)+1;
+    voice(id,v.rebuke);
+    const r=G.rel[id].player; r.trust=Math.max(-2,r.trust-1); r.cause='무례한 말을 들었다';
+    remember(id,'모욕','당신이 무례한 말을 했다');
+    G.pat[id]=ctx.rude>=2 ? c.lim : Math.min(c.lim-1,G.pat[id]+Math.round(c.lim/2));
+    if(ctx.rude>=2) say('sys',null,IGA(NK[id])+' 입을 닫았다. 무례한 말이 두 번이었다.');
+    ctx.social=(ctx.social||0)+1; renderAll(); return;
+  }
+  let line=I.social_draft;
+  if(!validateSocial(id,line)) line=v.sv.acks[0];                       // 사실 모양이면 버린다
+  if(I._f.act==='GREET'&&!ctx.greeted){ctx.greeted=true; G.pat[id]=Math.max(0,G.pat[id]-2)}
+  if(I._f.act==='UNKNOWN'){
+    G.miss++;
+    (G.misses=G.misses||[]).push({who:id, text:utter, why:whyMiss(I._f)});
+  }
+  if(line===v.whyAsk) ctx.askedWhy=true;   // 되묻는 말은 한 사람에게 한 번뿐이다
+  ctx.social=(ctx.social||0)+1;
+  voice(id,line);
+  renderAll();
+}
+
+/* ═══════════════ 새 패턴 ═══════════════
+   엔진은 "이 인물이 무엇을 아는가"만 내준다. 무엇을 말할지는 모델이 정한다.
+   안전장치는 의도 분류가 아니라 출력 검증이다.
+     엔진: 사실·기억·출처·감쇠·태도·관계·증거·풀이가능성
+     모델: 알아듣기 · 말하기
+   모델은 아래 목록 밖의 어떤 것도 말할 수 없다. 말하면 그 문장은 버려진다. */
+
+/* 이 인물이 지금 말할 수 있는 것 — 거짓말로 감춘 것은 애초에 목록에 없다 */
+function knowledge(id){
+  const c=N[id], t=c.t, out=[];
+  G.rows[id].forEach((r,i)=>{
+    if(G.hidden(r)) return;                                   // 첩자·청어가 감추는 시각
+    if(t.noHearsay&&r.told) return;                           // 카일: 전언은 옮기지 않는다
+    if(t.withhold&&r.subject===t.withhold&&!yielded(id,'distrust')) return;   // 삼키기로 한 것
+    const cf=conf(id,r);
+    const tier=r.kind==='self'?'확실':cf>=.66?'확실':cf>=.34?'흐릿':'거의 없음';
+    const blur=t.blurSource&&r.told;
+    out.push({ref:'R'+i, hour:HOURS[r.hour], room:RKO[r.room],
+      what: r.kind==='self' ? '내가 여기 있었다'
+          : tier==='흐릿' ? '누군가 있었다 (얼굴은 못 봄)'
+          : tier==='거의 없음' ? '뭔가 있었던 것 같다 (기억 안 남)'
+          : (NK[r.subject]+'을 봤다'),
+      확신: tier,
+      출처: r.told ? (blur?'전해 들음':r.told+'에게 들음') : '직접 봄',
+      _row:r, _i:i});
+  });
+  return out;
+}
+function alreadySaid(id){
+  const g=G.ctx[id].ground, out=[];
+  knowledge(id).forEach(k=>{
+    const r=k._row;
+    const key=r.kind==='self'?AT(r.subject,r.hour,r.room):OBS(id,r.hour,r.subject,r.room);
+    if(g.has(key)) out.push(k.ref);
+  });
+  return out;
+}
+function stanceNotes(id){
+  const c=N[id], t=c.t, out=[];
+  if(t.withhold&&!yielded(id,'distrust'))
+    out.push(NK[t.withhold]+'에 관해 본 것은 말하지 않기로 했다'+(c.reason.distrust?' ('+c.reason.distrust+')':''));
+  if(t.noHearsay) out.push('전해 들은 이야기는 옮기지 않는다'+(c.reason.hearsay?' ('+c.reason.hearsay+')':''));
+  [...G.ctx[id].stance.values()].filter(x=>x.revised).forEach(x=>out.push('앞서 세운 태도를 이미 거두었다'));
+  return out;
+}
+function buildPrompt(id){
+  const c=N[id], K=knowledge(id), said=alreadySaid(id), at=attitude(id,'player');
+  const hist=chatText(id,6);      // 내 말만이 아니라 내가 한 답까지 — 맥락은 양쪽이 있어야 이어진다
+  return [
+'너는 한국어 추리게임의 등장인물이다. 아래 규칙을 지켜 이 인물로서 한 번만 말한다.','',
+'[너]', c.ko+' — '+c.job,
+c.profile.map(x=>x[0]+': '+x[1]).join('\n'),
+'지금 상대(심문하는 사람)에 대한 태도: '+at.label+(at.cause?' ('+at.cause+')':''),'',
+'[상황] 어젯밤 성의 서고에서 기밀 문서가 사라졌다. 다섯 사람 중 하나가 첩자다. 너는 심문받고 있다.','',
+'[네가 아는 것] — 이 목록 밖의 시각·장소·인물은 존재하지 않는다',
+K.length?K.map(k=>k.ref+' | '+k.hour+' | '+k.room+' | '+k.what+' | '+k.확신+' | '+k.출처).join('\n')
+        :'(아무것도 기억나지 않는다)','',
+said.length?'[이미 말한 것 — 되풀이하지 마라] '+said.join(', '):'',
+stanceNotes(id).length?'[말하지 않기로 한 것]\n'+stanceNotes(id).map(x=>'- '+x).join('\n'):'',
+hist?'[최근 대화]\n'+hist:'','',
+'[규칙]',
+'1. 위 목록에 없는 시각·장소·인물을 절대 만들어 내지 마라. 지어낸 사실은 버려진다.',
+'2. 물은 것에만 답하라. 인사에는 인사로, 잡담에는 잡담으로 받아라. 묻지 않은 사실을 쏟지 마라.',
+'3. 이미 말한 것은 되풀이하지 말고, 관련된 것은 한 문장으로 묶어라.',
+'4. 모르면 모른다고 하라. 동기나 이유는 네게 없다.',
+'5. 네 인물다운 말투로, 짧게.',
+'',
+'JSON 하나만 출력한다: {"reply":"대사","used":["R2","R5"],"refused":false}',
+'used 에는 대사에서 실제로 쓴 사실의 번호만 넣는다. 사실을 하나도 쓰지 않았으면 빈 배열.'
+].filter(x=>x!=='').join('\n');
+}
+/* 출력 검증 — 쓴 사실 밖의 개체가 나오면 거부한다 */
+function verifyReply(id,reply,usedRefs,K){
+  const map={}; K.forEach(k=>map[k.ref]=k);
+  const okH=new Set(), okR=new Set(), okP=new Set([NK[id]]);
+  for(const ref of usedRefs){ const k=map[ref]; if(!k) return {ok:false,why:'없는 사실 번호 '+ref};
+    okH.add(k.hour); okR.add(k.room); if(k._row.kind==='saw'&&k.확신==='확실') okP.add(NK[k._row.subject]); }
+  for(const h of (reply.match(/\d\d시/g)||[])) if(!okH.has(h)) return {ok:false,why:'허용 밖 시각 '+h};
+  for(const r of ROOMS){ const parts=[r.ko].concat(r.ko.includes(' ')?r.ko.split(' '):[]);
+    for(const a of parts) if(a.length>1&&reply.includes(a)&&!okR.has(r.ko)) return {ok:false,why:'허용 밖 장소 '+r.ko}; }
+  for(const n of NPCS) if(reply.includes(n.ko)&&!okP.has(n.ko)) return {ok:false,why:'허용 밖 인물 '+n.ko};
+  if(reply.length>200) return {ok:false,why:'너무 김'};
+  if(/[A-Za-z]{3,}/.test(reply)) return {ok:false,why:'이물질'};
+  return {ok:true};
+}
+/* 모델이 없거나 두 번 실패했을 때의 최소 대사 — 템플릿 은행이 아니라 한 줄 */
+function fallbackLine(id,K){
+  const fresh=K.filter(k=>!alreadySaid(id).includes(k.ref));
+  if(!fresh.length) return N[id].v.dry;
+  const k=fresh[0];
+  return k._row.kind==='self' ? N[id].v.loc(k.hour+'엔',k.room)
+       : N[id].v.saw(k.hour+'에',k.room,NK[k._row.subject]);
+}
+/* 한 번의 대화 — 엔진이 아는 것을 내주고, 모델이 말하고, 엔진이 검사하고 기록한다 */
+/* ┌──────────────────────────────────────────────────────────────────┐
+   │ 아래 converse() 는 부르는 곳이 없다. 버린 코드가 아니라 세워 둔 코드다.  │
+   │                                                                  │
+   │ 지금 길: 엔진이 사실을 정하고 → 모델이 그 문장을 사람 말로 고쳐 쓴다.    │
+   │ 이 길:   엔진은 "무엇을 아는가"만 내주고 → 무엇을 말할지는 모델이 정한다. │
+   │          안전장치는 의도 분류가 아니라 출력 검증(verifyReply)이다.       │
+   │                                                                  │
+   │ 깨우는 조건과 대가:                                                  │
+   │   · 큰 모델이 붙어 있을 것 (LLM.big()) — 7B 는 규칙을 못 지켰다         │
+   │   · 깨우면 공범 붕괴·비밀 고백·첩자 진술 수정이 빠진다.                  │
+   │     그 경로들은 지금 talkOne 쪽에만 있다. 옮기기 전에는 켜지 말 것.       │
+   └──────────────────────────────────────────────────────────────────┘ */
+async function converse(text){
+  const id=G.sel; if(!id||G.over) return;
+  const c=N[id];
+  say('me',null,text);
+  if(G.pat[id]>=c.lim){ voice(id,c.v.shut);
+    say('sys',null,NK[id]+'의 인내가 한계다. 한동안 내버려 두면 누그러진다.'); renderAll(); return }
+  const K=knowledge(id);
+  let res=null, why=null;
+  for(let attempt=0; attempt<2 && !res; attempt++){
+    try{
+      const out=await LLM.chat(buildPrompt(id),
+        text+(attempt?'\n(직전 답이 규칙을 어겼다. 목록에 있는 사실만 써라.)':''),
+        {type:'object',additionalProperties:false,required:['reply','used','refused'],
+         properties:{reply:{type:'string'},used:{type:'array',items:{type:'string'}},refused:{type:'boolean'}}});
+      const o=jparse(out);
+      const reply=String(o.reply||'').trim(), used=Array.isArray(o.used)?o.used:[];
+      const v=verifyReply(id,reply,used,K);
+      if(v.ok&&reply) res={reply,used}; else { why=v.why||'빈 응답'; LLM.rejects=(LLM.rejects||0)+1 }
+    }catch(e){ why=e.message; break }
+  }
+  if(!res){ LLM.note=why; voice(id,fallbackLine(id,K)); G.pat[id]+=COST_ASK; spend(); renderAll(); return }
+
+  voice(id,res.reply);
+  /* 기록은 엔진이 한다 — 모델이 쓴 사실만 증언판과 공통 기반에 올린다 */
+  const ctx=G.ctx[id], n=ctx.turns.length;
+  res.used.forEach(ref=>{ const k=K.find(x=>x.ref===ref); if(!k) return; const r=k._row;
+    if(r.kind==='self'){ addCard({kind:'self',subject:r.subject,room:r.room,hour:r.hour,by:id,mark:'●',conf:1});
+      ctx.ground.set(AT(r.subject,r.hour,r.room),{by:'npc',turn:n,via:'self',conf:1,rows:[r.id]}); }
+    else if(k.확신==='확실'){ const blur=c.t.blurSource&&r.told;
+      addCard({kind:'saw',subject:r.subject,room:r.room,hour:r.hour,by:id,
+        mark:r.told&&!blur?'·':'○',conf:conf(id,r),told:r.told,blurred:!!blur});
+      witnessSelf(id,r);
+      ctx.ground.set(OBS(id,r.hour,r.subject,r.room),{by:'npc',turn:n,via:r.told?'hearsay':'witnessed',conf:1,rows:[r.id]});
+      ctx.ground.set(AT(r.subject,r.hour,r.room),{by:'npc',turn:n,via:r.told?'hearsay':'witnessed',conf:1,rows:[r.id]});
+      groundWitnessSelf(ctx,id,r,n); }
+  });
+  ctx.turns.push({text,used:res.used,atBeat:G.beats,pairs:new Map()});
+  G.pat[id]+=res.used.length?COST_ASK:2;              // 사실을 받아냈을 때만 시간을 쓴다
+  if(res.used.length) spend();
+  renderAll();
+}
+
+/* ═══════════ 대화 ═══════════ */
+/* ═══════════ 수신자 해소 ═══════════
+   부른 이름이 곧 수신자다. 둘을 부르면 둘 다 답한다 —
+   같은 뜻을 사람마다 따로 푼다. 한 사람의 답을 다른 사람이 대신하지 않는다.
+
+   다만 이름을 부르는 것은 **그 한 발화**를 향한 것이지 마주 선 상대를 바꾸는 것이 아니다.
+   명단에서 고른 사람은 플레이어가 정한 것이고, 발화가 그것을 덮어쓰면
+   "카일에게 묻는데 하웰이 답한다". 부른 사람이 답한 뒤 자리는 되돌린다. */
+function talk(text){
+  if(G.over)return;
+  const A=address(text);
+  let to=A.called.filter(i=>N[i]);
+  const standing=G.sel;                                  // 명단에서 고른 사람
+  const M = standing ? meeting(standing) : null;         // 이 대화가 벌어지는 자리
+  // "두 분" — 이름을 대지 않고 여럿을 부르면 이 자리에 함께 있는 사람들이다
+  if(!to.length&&A.plural&&M&&M.present.length>1)
+    to=[standing].concat(M.present.filter(i=>i!==standing));
+  /* 여럿에게 물었으면 그 무리가 선다. 다음 물음에 이름을 다시 대지 않아도 그대로다 —
+     심문관은 두 사람을 세워 놓고 계속 묻지, 한 마디마다 이름을 부르지 않는다.
+     푸는 방법은 둘: 명단에서 누구든 고르거나, 한 사람의 이름만 부르거나. */
+  G.hereRoom = M ? M.room : null;                        // 이 발화의 "여기" — 만남의 자리
+  if(to.length>=2) G.group=to.slice();
+  else if(to.length===1) G.group=null;
+  else if(G.group&&standing&&G.group.indexOf(standing)>=0) to=G.group.slice();
+  const targets = to.length ? to : (standing?[standing]:[]);
+  targets.forEach((who,i)=>{
+    if(G.over) return;
+    G.sel=who;
+    if(i>0) G.skipMe=true;                     // 내 말은 한 번만 적는다
+    talkOne(text);
+  });
+  if(standing&&N[standing]) G.sel=standing;              // 자리를 되돌린다
+}
+/* ═══════════ 한 턴의 층 ═══════════
+   talkOne 은 순서만 정한다. 각 층은 "여기서 끝났다"를 돌려주고, 그러면 거기서 멈춘다.
+     열기 → 인내 → 사교 → 화행 → 뜻 다듬기 → 해소 → 값 치르기 → 반응 → 대답
+   층을 코드 구조로 드러낸다. 순서가 곧 규칙이므로 순서를 읽을 수 있어야 한다. */
+
+/* 턴을 연다 — 기록하고, 읽고, 내 말을 적는다 */
+function openTurn(id,text){
+  G.turnNo=(G.turnNo||0)+1;
+  G.utter=text;
+  if(!G.ctx[id])G.ctx[id]=newCtx();
+  const I=interpret(id,text); G.parse=I._f; G.interp=I;
+  if(G.skipMe) G.skipMe=false; else say('me',null,text);
+  return I;
+}
+
+/* 인내가 다했으면 아무 말도 듣지 않는다 */
+function outOfPatience(id){
+  const c=N[id];
+  if(G.pat[id]<c.lim) return false;
+  voice(id,c.v.shut); say('sys',null,NK[id]+'의 인내가 한계다. 한동안 내버려 두면 누그러진다.');
+  renderAll(); return true;
+}
+
+/* 화행에는 화행으로 받는다 — 사건 경로라고 인사를 삼키면 대답이 아니라 통보가 된다.
+   둘 다 사실 주장이 아니다. 카드도, 명제도, 시계도 건드리지 않는다. */
+function speechActs(id,I,f){
+  const v=N[id].v, ctx=G.ctx[id];
+  if((I.acts||[]).indexOf('GREET')>=0){
+    voice(id, ctx.greeted ? v.greet2 : v.greet);
+    if(!ctx.greeted){ ctx.greeted=true; G.pat[id]=Math.max(0,G.pat[id]-2) }
+  }
+  // 예/아니오를 묻는 넓은 물음은 일단 받아 준다. 한 사람에게 한 번만 — 되풀이하면 그것도 기계다.
+  if(f.yesno&&f.broad&&!ctx.acked&&v.ackAsk){ ctx.acked=true; voice(id,v.ackAsk) }
+}
+
+/* 뜻 다듬기 — 엔진이 소유하지 않는 물음을 소유한 물음으로 옮기거나, 여기서 끝낸다.
+   돌려주는 값이 true 면 이 턴은 여기서 끝났다. */
+function routeIntent(id,f,text){
+  const v=N[id].v;
+  if(f.act==='ASK_SUSPECT'){
+    const sus=suspicions(id)[0];
+    if(sus) voiceSuspicion(id,sus); else voice(id,v.noSuspect);
+    spend(); renderAll(); return true;
+  }
+  if(f.answer_type==='activity') f.act='ASK_WHEREABOUTS';   // 활동은 없다. 있던 곳으로 답한다
+  if(f.answer_type==='why'){                     // 동기는 엔진이 갖고 있지 않다 — 지어내지 않는다
+    voice(id,v.nowhy); spend(); renderAll(); return true;
+  }
+  if(f.answer_type==='timerange'&&f.room){       // "몇 시부터 몇 시까지 …에 있었죠?"
+    f.act='ASK_WHEREABOUTS'; f.hour=null; f.hours=[]; f._rangeRoom=f.room; f.room=null;
+  }
+  if(f.after&&f.hour==null){                       // "그 이후에는?" — 주제의 다음 시각
+    const T=G.ctx[id].topic;
+    if(T.hour!=null&&T.hour<5){ f.hour=T.hour+1; f.hours=[f.hour]; f.act='ASK_WHEREABOUTS' }
+  }
+  /* 이어 묻기 — 앞 물음은 이 대화의 것이지 이 인물의 것이 아니다.
+     예전에는 상대의 turns 에서만 찾았다. 그래서 "하웰, 당신은?" 처럼
+     상대를 바꿔 이어 물으면 물려받을 것이 없어 인사로 떨어졌다. */
+  if(f.act==='FOLLOW_UP'||f.ellipsis){
+    const L=G.lastQ;
+    if(L&&(G.turnNo-L.at)<=3&&OBLIG[L.act]==='answer'){
+      f.act=L.act;
+      if(f.hour==null&&!f.broad&&L.hour!=null){ f.hour=L.hour; f.hours=[L.hour] }
+      if(f.room==null) f.room=L.room;
+      if(f.you) f.person=null;                       // "당신은?" — 주어는 지금 마주한 사람
+      else if(f.person==null) f.person=L.person;
+      if(L.broad) f.broad=true;
+      f.yesno=f.yesno||L.yesno;
+      if(f.act==='ASK_ABOUT'&&f.person==null) f.act='ASK_WHEREABOUTS';
+    } else {
+      const lt=G.ctx[id].turns[G.ctx[id].turns.length-1];
+      f.act=(lt&&lt.Q&&OBLIG[lt.Q.act]==='answer')?lt.Q.act:'ASK_SIGHTING';
+    }
+  }
+  /* "여기" — 묻는 사람이 보고 있는 자리다.
+     인물은 틱마다 움직이므로 대상마다 따로 풀면 "두 분은 여기에 계셨나요?" 가
+     사람마다 다른 방을 뜻하게 된다. 한 발화에 한 자리로 고정한다. */
+  if(f.room==null&&RE.deicHere.test(text)){ f.room=G.hereRoom||meeting(id).room; f.rooms=[f.room] }
+  /* 있었느냐를 묻는데 목격담으로 답하지 않는다.
+     "…에 계셨나요?" 는 행적을 묻는 말이지 무엇을 봤느냐를 묻는 말이 아니다. */
+  if(f.yesno&&f.room&&f.act==='ASK_SIGHTING') f.act='ASK_WHEREABOUTS';
+  return false;
+}
+
+/* 해소 — 생략된 슬롯을 채우고, 넘겨짚어야 할 자리면 되묻는다.
+   null 을 돌려주면 되물었다는 뜻이고, 되묻기는 시간을 쓰지 않는다. */
+function resolveTurn(id,f){
+  const v=N[id].v;
+  const Q=resolve(id,f); G.parse=Object.assign({},f,{hour:Q.hour,room:Q.room,person:Q.person});
+  // 이 대화가 마지막으로 물은 것 — 인물이 아니라 대화에 매단다
+  if(OBLIG[Q.act]==='answer')
+    G.lastQ={act:Q.act,hour:Q.hour,room:Q.room,person:Q.person,
+             broad:!!f.broad,yesno:!!f.yesno,at:G.turnNo};
+  if(Q.clarify){
+    voice(id,Q.clarify==='place'?v.askR:Q.clarify==='person'?v.askP:v.ask);
+    renderAll(); return null;
+  }
+  return Q;
+}
+
+/* 값 치르기 — 무엇을 물었느냐가 인내를 깎는 폭을 정한다 */
+function chargePatience(id,Q){
+  const t=N[id].t;
+  G.pat[id]=Math.max(0,G.pat[id]+(Q.act==='PRESS'?COST_PUSH*(t.pressMult||1)
+    :Q.act==='PRESENT'?COST_PUSH:Q.act==='REASSURE'?-12:COST_ASK));
+}
+
+/* 반응 — 답이 아니라 반응이다. 다독임·추궁·들이대기는 기억을 검색하지 않는다. */
+function reactTurn(id,Q,f){
+  const c=N[id], v=c.v, t=c.t;
+  if(Q.act==='REASSURE'){
+    G.reassured[id]++;
+    if(t.reassurable&&G.reassured[id]>=2&&!G.toldSecret[id]){
+      G.toldSecret[id]=true;
+      remember(id,'고백','다독임 끝에 감추던 것을 털어놓았다');
+      if(id===G.R){ voice(id,v.admit(c.secret));
+        G.cards.filter(x=>x.subject===G.R&&x.hour===G.hTick).forEach(x=>x.settled=true);
+        say('sys',null,'증언판: '+HOURS[G.hTick]+' '+NK[G.R]+'의 행적이 해명됐다.');
+      } else {
+        const {keep}=subtract(id,pool(id,r=>r.kind==='saw'));
+        const g=take(id,keep,'saw',1).groups[0];
+        if(g&&Math.min(...g.rows.map(r=>conf(id,r)))>=.66){
+          const p={groups:[{g,drop:{hour:false,room:false},additive:false,kind:'saw'}],corro:null,refuse:null,clarify:false};
+          voice(id,v.recall+' '+realize(id,Q,p)); commit(id,Q,p);
+        } else voice(id,v.admit(c.secret));
+      }
+    } else voice(id,v.calm);
+    const rp=G.rel[id].player; if(rp.trust<2){rp.trust++; rp.cause='다독여 주었다'}
+    remember(id,'다독임','당신이 다독였다. 마음이 조금 놓였다');
+    spend(); renderAll(); return true;
+  }
+  if(Q.act==='PRESS'){
+    const standing=[...G.ctx[id].stance.values()].find(x=>!x.revised&&x.kind!=='scope');
+    if(standing){
+      standing.revised=true; standing.cause='플레이어의 추궁';
+      remember(id,'추궁','몰아붙이자 세워 둔 태도를 거두었다');
+      voice(id,v.yieldL);
+      say('sys',null,'증언판: '+NK[id]+'이 앞서 세운 태도를 거두었다.');
+      spend(); renderAll(); return true;
+    }
+    if(t.deflect){
+      const {keep}=subtract(id,pool(id,r=>r.kind==='saw'&&r.subject!==id));
+      const g=take(id,keep,'saw',1).groups[0];
+      if(g&&Math.min(...g.rows.map(r=>conf(id,r)))>=.66){
+        const p={groups:[{g,drop:{hour:false,room:false},additive:false,kind:'saw'}],corro:null,refuse:null,clarify:false};
+        const line=realize(id,Q,p); commit(id,Q,p);
+        voice(id,v.deflect(spanSaw(g.hours),RKO[g.room],andList(g.who.map(x=>NK[x]))));
+      } else voice(id,v.press);
+    } else voice(id,v.press);
+    spend(); renderAll(); return true;
+  }
+  if(Q.act==='PRESENT'){ present(id,Q); spend(); renderAll(); return true }
+  return false;
+}
+
+/* 예/아니오를 물었으면 예/아니오로 시작한다.
+   판정은 오직 그가 이미 하고 있는 진술에서 나온다 — 진실 테이블이 아니다.
+   그래서 첩자는 제 거짓말대로 "그렇소"라고 답한다. 부정은 v.notThere 가 이미 "아니오"로 읽힌다. */
+function answerYesNo(id,Q,f){
+  const v=N[id].v;
+  if(!(f.yesno&&Q.room&&(Q.act==='ASK_WHEREABOUTS'||Q.act==='ASK_ROOM')&&v.yes)) return;
+  const mine=G.rows[id].filter(r=>r.kind==='self'&&(Q.hour==null||r.hour===Q.hour));
+  if(mine.some(r=>r.room===Q.room)) voice(id,v.yes);
+  else if(Q.hour!=null&&v.no){
+    // 그 시각엔 아니었다 — 다만 다른 시각엔 갔을 수 있으니 "가지 않았소"라고 하면 거짓이 된다.
+    // 아니라고 답하고, 그 시각에 있던 곳을 댄다. 물음도 행적 물음으로 바뀐다 —
+    // 방을 지워 놓고 방 물음으로 남겨 두면 아래에서 없는 방을 말하려 든다.
+    voice(id,v.no); Q.room=null; f.room=null;
+    if(Q.act==='ASK_ROOM'){ Q.act='ASK_WHEREABOUTS'; f.act='ASK_WHEREABOUTS' }
+  }
+}
+
+/* 대답 — 경계 → 검색 → 계획 → 표현. 사실은 오직 이 길로만 나온다. */
+function answerTurn(id,Q,f,repeat){
+  const c=N[id], v=c.v, t=c.t;
+  answerYesNo(id,Q,f);
+  const b=boundary(id,Q);
+  if(b&&b.sayable){
+    const p={groups:[],corro:null,refuse:b,clarify:false};
+    voice(id,realize(id,Q,p)); commit(id,Q,p); spend(); renderAll(); return;
+  }
+  const kind=(Q.act==='ASK_WHEREABOUTS'||(Q.act==='ASK_ABOUT'&&Q.person===id))?'self':'saw';
+  const all=retrieve(id,Q);
+  const {keep,corr}=subtract(id,all);
+  const plan=planTurn(id,Q,keep,corr,kind);
+  // 좁혀 물었는데 이미 말한 것뿐이라면, 거절하지 말고 되짚어 확인해 준다
+  if(!plan.groups.length&&!corr.length&&all.length&&!repeat){
+    const dropped=all.filter(r=>!keep.includes(r));
+    const g2=take(id,dropped,kind,1).groups[0];
+    if(g2){
+      const p2={groups:[{g:g2,drop:{hour:false,room:false},additive:false,kind}],
+                corro:null,refuse:null,clarify:false,exhausted:false};
+      const narrow = (Q.hour!=null)||Q.room||Q.person;   // 범위를 좁혀 물었나
+      if(Q.hour!=null) p2.groups[0].drop.hour=true;      // 질문에 이미 들어 있는 시각은 뺀다
+      voice(id, (narrow?'':v.again+' ')+realize(id,Q,p2));
+      commit(id,Q,p2); spend(); renderAll(); return;
+    }
+  }
+  plan.exhausted=(!plan.groups.length&&!corr.length&&all.length>0)||repeat&&!plan.groups.length;
+  const pre=(Q.act==='ASK_ABOUT'&&Q.person===id)?v.selfq+' ':'';
+  /* profile·rules·style 은 인물 시트의 서술문이지 그가 하는 말이 아니다.
+     시트는 행동을 정할 뿐, 입에 오르지 않는다. */
+  voice(id,(G._pre||'')+pre+realize(id,Q,plan)); G._pre='';
+  commit(id,Q,plan);
+  if(t.chatty&&Q.person!==id&&plan.groups.length&&Q.room==null&&Q.hour==null){
+    const {keep:k2}=subtract(id,pool(id,r=>r.kind===kind));   // 물은 것과 같은 종류만
+    const x=take(id,k2,kind,1).groups[0];
+    if(x&&Math.min(...x.rows.map(r=>conf(id,r)))>=.66){
+      const said=new Set(); plan.groups.forEach(({g})=>g.hours.forEach(h=>said.add(h)));
+      const sameHour=x.hours.every(h=>said.has(h));
+      const p={groups:[{g:x,drop:{hour:sameHour,room:false},additive:false,kind}],corro:null,refuse:null,clarify:false};
+      voice(id,'아, 그리고 '+realize(id,Q,p)); commit(id,Q,p);
+    }
+  }
+  spend(); renderAll();
+}
+
+function talkOne(text){
+  if(G.over||!G.sel)return;
+  const id=G.sel;
+  const I=openTurn(id,text), f=I._f;
+  if(outOfPatience(id)) return;
+  if(I.case_relevance<0.5){ socialTurn(id,I); return }   // 사교 경로: 엔진을 건드리지 않는다
+  speechActs(id,I,f);
+  if(routeIntent(id,f,text)) return;
+  const Q=resolveTurn(id,f);
+  if(!Q) return;                                         // 넘겨짚지 않고 되물었다
+  chargePatience(id,Q);
+  const repeat=G.ctx[id].askedQ.has(sigOf(Q));
+  if(reactTurn(id,Q,f)) return;
+  answerTurn(id,Q,f,repeat);
+}
+
+/* 증언 제시 — 손에 든 카드든 지어낸 허풍이든 받는다 */
+function present(id,Q){
+  const c=N[id], v=c.v, ctx=G.ctx[id];
+  const subj=Q.you?id:(Q.person&&Q.person!==id?Q.person:id);
+  const held=G.cards.find(x=>x.subject===subj&&x.room===Q.room&&(Q.hour==null||x.hour===Q.hour)&&x.by!==id);
+  const hr=Q.hour!=null?Q.hour:(held?held.hour:null);
+  const trueHit=hr!=null&&G.truth[subj][hr]===Q.room;
+  if(hr!=null&&Q.room) ctx.ground.set(AT(subj,hr,Q.room),{by:'player',turn:ctx.turns.length,via:'quoted',conf:1,rows:[]});
+
+  if(id===G.spy&&subj===id&&hr===G.theft-1&&Q.room==='court'){
+    G.pushed[id]++;
+    remember(id,'들이댐','증언을 들이대자 진술을 고쳤다');
+    if(G.pushed[id]===1){
+      voice(id,v.revise);
+      addCard({kind:'self',subject:id,room:'court',hour:hr,by:id,mark:'●',conf:1,revised:true});
+      say('sys',null,'증언판: '+NK[id]+'의 '+HOURS[hr]+' 진술이 수정됐다.');
+    } else { voice(id,v.lock); G.pat[id]+=12 }
+    return;
+  }
+  if(id===G.R&&subj===id&&hr===G.hTick&&Q.room==='yard'){
+    voice(id,v.admit(c.secret)); G.toldSecret[id]=true;
+    remember(id,'고백','행적을 짚자 감추던 것을 털어놓았다');
+    G.cards.filter(x=>x.subject===G.R&&x.hour===G.hTick).forEach(x=>x.settled=true);
+    say('sys',null,'증언판: '+HOURS[G.hTick]+' '+NK[G.R]+'의 행적이 해명됐다.');
+    return;
+  }
+  { const ac0=recruitOf(id);
+    if(ac0&&hr===ac0.hour){
+    const ac=ac0;
+    voice(id,v.fold(RKO[G.truth[id][ac.hour]],RKO[ac.room],NK[G.spy]));
+    // 왜 넘어갔는지는 인물마다 다르다 — 첩자가 쥔 것은 그 사람이 감추던 바로 그것이다.
+    // 새 허구가 아니라 이미 시트에 있던 비밀을 지렛대로 쓴다.
+    if(v.foldWhy) voice(id,v.foldWhy);
+    G.toldSecret[id]=true;                       // 약점이 드러났으니 더 숨길 것이 없다
+    remember(id,'실토','거짓 증언이 깨지자 시킨 사람과 까닭을 말했다');
+    ac.folded=true;
+    G.cards.filter(x=>x.by===id&&x.kind==='saw'&&x.hour===ac.hour&&x.subject===G.spy).forEach(x=>x.doubt=true);
+    if(!G.cards.some(x=>x.by===id&&x.kind==='saw'&&x.hour===ac.hour&&x.subject===G.spy))
+      addCard({kind:'saw',subject:G.spy,room:ac.room,hour:ac.hour,by:id,mark:'○',conf:1,doubt:true});
+    // 무너뜨린 뒤에야 나온다 — 알아낸 것이지 알려 준 것이 아니다
+    say('sys',null,'증언판: '+NK[id]+'의 '+HOURS[ac.hour]+' 목격은 거짓이었다. 시킨 사람이 있다.'+
+      (ac.at>0?' 오늘 낮에 심어진 것이다.':''));
+    return;
+  } }
+  if(id===G.C&&hr===G.theft&&G.rows[G.C].some(r=>r.implanted)){
+    const impl=G.rows[G.C].find(r=>r.implanted);
+    voice(id,v.doubt(RKO[G.truth[G.C][G.theft]],RKO[impl.room]));
+    G.implantVoid=true;
+    G.cards.filter(x=>x.by===G.C&&x.kind==='saw'&&x.hour===G.theft).forEach(x=>x.doubt=true);
+    if(!G.cards.some(x=>x.by===G.C&&x.kind==='saw'&&x.hour===G.theft))
+      addCard({kind:'saw',subject:impl.subject,room:impl.room,hour:impl.hour,by:G.C,mark:'○',conf:1});
+    say('sys',null,'증언판: '+NK[G.C]+'의 '+HOURS[G.theft]+' 목격은 성립하지 않는다.');
+    return;
+  }
+  // 제 눈으로 아는 일이면, 허풍으로 몰기 전에 제 기억으로 반박한다
+  { const sus=freshSuspicion(id); if(sus){ voiceSuspicion(id,sus); return } }
+  if(!held&&!trueHit){                       // 확인할 길이 없는 말을 지어내 들이댄 것
+    voice(id,v.deny); G.pat[id]+=25;
+    const r=G.rel[id].player; r.trust=Math.max(-2,r.trust-1); r.cause='없는 증언을 들이댔다';
+    remember(id,'허풍','없는 증언을 들이댔다. 당신을 덜 믿게 됐다');
+    return }
+  // 참인 주장을 확인해 주는 것도 증언이다 — 판에 남아야 한다. 한 문장에 둘을 물어도 둘 다 본다.
+  const pairs=[], hs=Q.hours||[], rs=Q.rooms||[];
+  for(let i=0;i<Math.min(hs.length,rs.length);i++) pairs.push({h:hs[i],r:rs[i]});
+  if(!pairs.length&&hr!=null&&Q.room) pairs.push({h:hr,r:Q.room});
+  const okPairs=pairs.filter(x=>G.truth[subj][x.h]===x.r);
+  if(okPairs.length){
+    voice(id,v.confirm(okPairs.length));
+    okPairs.forEach(x=>{
+      addCard({kind:'self',subject:subj,room:x.r,hour:x.h,by:id,mark:'●',conf:1});
+      ctx.ground.set(AT(subj,x.h,x.r),{by:'npc',turn:ctx.turns.length,via:'self',conf:1,rows:[]});
+    });
+    say('sys',null,'증언판: '+NK[subj]+'의 '+okPairs.map(x=>HOURS[x.h]).join('·')+' 행적이 확인됐다.');
+    return;
+  }
+  voice(id,v.shrug);
+}
+/* ════════════════ 렌더 ════════════════ */
+function renderAll(){ renderHead(); renderPlan(); renderRoster(); renderId(); renderFeed(); renderLog(); renderHints(); renderParse(); renderBoard(); }
+function renderHead(){
+  document.getElementById('clock').textContent=(10+Math.min(G.tick,TICKS))+'시';
+  const b=document.getElementById('beats'); b.textContent=Math.max(0,G.beats);
+  b.className='v mono'+(G.beats<=6?' warn':'');
+  document.getElementById('ncards').textContent=G.cards.length;
+  document.getElementById('planhour').textContent=(10+Math.min(G.tick,TICKS))+'시';
+}
+function renderPlan(){
+  const p=document.getElementById('plan'); p.innerHTML='';
+  ROOMS.forEach(r=>{
+    const d=el('div','room '+r.id); d.appendChild(el('div','rn',r.ko));
+    const c=el('div','chips');
+    NPCS.filter(n=>posNow(n.id)===r.id).forEach(n=>c.appendChild(el('span','chip',n.ko)));
+    d.appendChild(c); p.appendChild(d);
+  });
+}
+function renderRoster(){
+  const w=document.getElementById('roster'); w.innerHTML='';
+  NPCS.forEach(n=>{
+    const pct=Math.min(100,G.pat[n.id]/n.lim*100), shut=G.pat[n.id]>=n.lim;
+    const b=el('button','who'+(G.sel===n.id?' on':'')+(shut?' shut':''));
+    const l1=el('div','l1'); l1.appendChild(el('span','nm',n.ko));
+    l1.appendChild(el('span','jb',n.job.split(' · ')[0]));
+    l1.appendChild(el('span','st',RKO[posNow(n.id)])); b.appendChild(l1);
+    const bar=el('div','bar'); const i=el('i',pct>=100?'hot':pct>=60?'mid':''); i.style.width=pct+'%';
+    bar.appendChild(i); b.appendChild(bar);
+    b.onclick=()=>{G.sel=n.id; G.group=null; approach(n.id); renderAll(); document.getElementById('say').focus()};
+    w.appendChild(b);
+  });
+}
+/* 의심 — 새 세계 상태가 아니라 파생값이다.
+   내가 들은 주장과 내 목격이 어긋나면 그 사람을 의심한다. 근거는 언제나 실제 행이다.
+   플레이어가 증언을 옮길수록 인물들이 스스로 수사에 참여하게 된다. */
+function suspicions(id){
+  const ctx=G.ctx[id]; if(!ctx) return [];
+  const out=[];
+  ctx.ground.forEach((v,key)=>{
+    if(!key.startsWith('AT|')||v.by!=='player') return;      // 플레이어가 전해 준 주장만
+    const parts=key.split('|'), who=parts[1], h=+parts[2], room=parts[3];
+    if(who===id) return;
+    const t=N[id].t;
+    if(t.withhold===who&&!yielded(id,'distrust')) return;    // 삼키기로 한 사람은 의심도 입에 올리지 않는다
+    const mine=G.rows[id].find(r=>r.kind==='saw'&&r.subject===who&&r.hour===h&&!G.hidden(r)&&!r.told);
+    if(mine&&mine.room!==room) out.push({who,hour:h,claimed:room,saw:mine.room});
+  });
+  // 공범은 시킨 사람을 입에 올리지 않는다
+  if(recruitOf(id)) return out.filter(x=>x.who!==G.spy);
+  return out;
+}
+function freshSuspicion(id){
+  const ctx=G.ctx[id]; ctx.voiced=ctx.voiced||new Set();
+  return suspicions(id).find(x=>!ctx.voiced.has(x.who+'|'+x.hour));
+}
+function voiceSuspicion(id,x){
+  const ctx=G.ctx[id]; ctx.voiced.add(x.who+'|'+x.hour);
+  voice(id,N[id].v.suspect(NK[x.who],HOURS[x.hour],RKO[x.claimed],RKO[x.saw]));
+}
+/* 다가가면 인물이 먼저 말을 건다. 사실은 흘리지 않고, 시간도 쓰지 않는다. */
+function approach(id){
+  const c=N[id], v=c.v, ctx=G.ctx[id];
+  if(!ctx||ctx.approached||G.over) return;
+  ctx.approached=true;
+  const at=attitude(id,'player');
+  let line;
+  if(G.pat[id]>=c.lim)   line=v.shut;
+  else if(at.trust<0)    line=v.openCold;
+  else if(at.trust>0)    line=v.openWarm;
+  else if(ctx.greeted)   line=v.greet2;
+  else { line=v.greet; ctx.greeted=true }
+  voice(id,line);
+  // 처음 말을 걸었을 때는 자기 일을 한 줄 붙인다 — 자기소개 자리라 튀지 않는다
+  if(!ctx.introduced&&N[id].lore){ ctx.introduced=true; voice(id,N[id].lore.work) }
+  const sus=freshSuspicion(id);
+  if(sus) voiceSuspicion(id,sus);                 // 새로 생긴 의심은 먼저 꺼낸다
+  const here=NPCS.filter(n=>n.id!==id&&posNow(n.id)===posNow(id)).map(n=>NK[n.id]);
+  if(here.length){ const last=here[here.length-1];
+    say('sys',null,EUN(NK[id])+' 지금 '+RKO[posNow(id)]+'에서 '+here.join(', ')+(jong(last)?'과':'와')+' 함께 있다.') }
+}
+function renderId(){
+  const w=document.getElementById('idcard'); w.innerHTML='';
+  if(!G.sel){ w.appendChild(el('div','cost','왼쪽에서 말을 걸 사람을 고르시오.')); return }
+  const n=N[G.sel], d=el('div','card-id');
+  const h=el('div','cih'); h.appendChild(el('div','cin',n.ko)); h.appendChild(el('div','cij',n.job));
+  d.appendChild(h);
+  const bx=el('div','prof');
+  n.profile.forEach(([k,t])=>{const r=el('div','prow');
+    r.appendChild(el('span','pk',k)); r.appendChild(el('span','pv',t)); bx.appendChild(r)});
+  const rNow=el('div','prow');
+  rNow.appendChild(el('span','pk','여기'));
+  { const M=scene(n.id), with_=M.present.filter(i=>i!==n.id).map(i=>NK[i]);
+    rNow.appendChild(el('span','pv',RKO[M.room]+(with_.length?' — '+with_.join(' · ')+'도 함께 있다':' — 둘뿐이다'))); }
+  bx.appendChild(rNow);
+  const at=attitude(n.id,'player'), r2=el('div','prow');
+  r2.appendChild(el('span','pk','지금'));
+  r2.appendChild(el('span','pv','당신에 대해 '+at.label+(at.cause?' — '+at.cause:'')));
+  bx.appendChild(r2);
+  /* 태도만 보이면 결과만 보이는 것이다. 거기까지 온 이력을 함께 편다. */
+  if(at.history.length){
+    const r3=el('div','prow');
+    r3.appendChild(el('span','pk','겪은 일'));
+    const pv=el('span','pv');
+    at.history.slice().reverse().forEach(x=>
+      pv.appendChild(el('div',null,(10+x.at)+'시 · '+x.kind+' — '+x.why)));
+    r3.appendChild(pv); bx.appendChild(r3);
+  }
+  if(G.group&&G.group.length>1&&G.group.indexOf(n.id)>=0){
+    const r4=el('div','prow');
+    r4.appendChild(el('span','pk','함께'));
+    r4.appendChild(el('span','pv',G.group.map(i=>NK[i]).join(' · ')+
+      '에게 함께 묻는 중 — 명단에서 누구든 고르면 풀린다'));
+    bx.appendChild(r4);
+  }
+  d.appendChild(bx); w.appendChild(d);
+}
+function renderFeed(){
+  const f=document.getElementById('feed'); f.innerHTML='';
+  if(!G.feed.length){f.appendChild(el('span',null,'아직 마주친 사람이 없다.')); return}
+  G.feed.forEach(t=>f.appendChild(el('span',null,t)));
+}
+function renderLog(){
+  const L=document.getElementById('log'); L.innerHTML='';
+  G.log.forEach(m=>{
+    const d=el('div','msg '+(m.who==='me'?'me':m.who==='sys'?'sys':''));
+    if(m.who!=='sys') d.appendChild(el('div','src',m.who==='me'?'나':NK[m.id]));
+    d.appendChild(el('div','bd',m.text)); L.appendChild(d);
+  });
+  L.scrollTop=L.scrollHeight;
+}
+function renderHints(){
+  const h=document.getElementById('hints'); h.innerHTML='';
+  if(!G.sel||G.over)return;
+  const ex=['어젯밤 어디 있었소?','누구를 봤소?','그때 또 누가 있었소?','서고엔 누가 드나들었소?',
+            '미라에 대해 아는 게 있소?','카일은 당신이 안뜰에 있었다고 하던데.',
+            '거짓말하고 있군.','겁내지 마시오. 해치지 않소.'];
+  ex.forEach(t=>{const b=el('button','hint',t);
+    b.onclick=()=>{const i=document.getElementById('say'); i.value=t; i.focus()}; h.appendChild(b)});
+}
+function renderParse(){
+  const p=document.getElementById('parse'); p.innerHTML='';
+  const bits=[];
+  if(G.parse){
+    const q=G.parse;
+    bits.push('해석: '+(q.act==='OFF_TOPIC'?'<span class="miss">해석 실패</span>':'<b>'+ACTKO[q.act]+'</b>')
+      +(q.person?' · '+NK[q.person]:'')+(q.hour!=null?' · '+HOURS[q.hour]:'')+(q.room?' · '+RKO[q.room]:''));
+  }
+  bits.push('해석 실패 누적 '+G.miss);
+  bits.push('지목할 준비가 되면 오른쪽 위 <b>첩자 지목 ▸</b>');
+  bits.push(LLM.on()
+    ? 'AI 대사 켜짐 ('+(LLM.model||LLM.provider)+')'+(LLM.rejects?' · 사실 이탈 거부 '+LLM.rejects+'회':'')
+    : 'AI 대사 꺼짐 (템플릿) — 오른쪽 위 <b>AI</b>');
+  p.innerHTML=bits.join('<span style="opacity:.4">|</span> ');
+}
+function renderBoard(){
+  const t=document.getElementById('bd'); t.innerHTML='';
+  const th=t.createTHead().insertRow(); th.appendChild(el('th','',''));
+  HOURS.forEach(h=>th.appendChild(el('th',null,h)));
+  const tb=t.createTBody();
+  NPCS.forEach(n=>{
+    const tr=tb.insertRow(); const h=el('th','nm',n.ko); h.scope='row'; tr.appendChild(h);
+    for(let hr=0;hr<6;hr++){
+      const cs=G.cards.filter(c=>c.subject===n.id&&c.hour===hr);
+      const td=el('td','cell');
+      const live=cs.filter(c=>!c.doubt&&!c.settled);
+      const rooms=new Set(live.map(c=>c.room));
+      if(rooms.size>1)td.className='cell conflict';
+      else if(cs.length&&cs.some(c=>c.settled))td.className='cell settled';
+      /* 한 칸에 같은 방이 여러 번 적히지 않게 묶는다 — 서로 다른 증언이 같은 곳을 가리키면
+         그건 어긋남이 아니라 뒷받침이다. 표는 한 번만 쓰고, 출처는 전부 손끝에 남긴다. */
+      const byRoom=[];
+      cs.forEach(c=>{ let e=byRoom.find(x=>x.room===c.room);
+        if(!e) byRoom.push(e={room:c.room,cards:[]}); e.cards.push(c) });
+      byRoom.forEach(e=>{
+        const dead=e.cards.every(c=>c.settled||c.doubt);
+        const s=el('span','cl'+(e.cards.every(c=>c.doubt)?' doubt':''));
+        const marks=e.cards.map(c=>c.mark).filter((m,i,a)=>a.indexOf(m)===i).join('');
+        s.appendChild(el('span','mk',marks+' '));
+        if(dead) s.appendChild(el('s',null,RKO[e.room]));
+        else s.appendChild(document.createTextNode(RKO[e.room]));
+        s.title=e.cards.map(c=>NK[c.by]+'의 '
+              +(c.kind==='self'?(c.viaSaw?'목격하며 밝힌 본인 위치':'본인 진술')
+                :c.told?(c.blurred?'전언(출처 불명)':c.told+'에게 들은 전언'):'목격')
+              +(c.revised?' · 수정된 진술':'')+(c.doubt?' · 본인 위치와 모순':'')+(c.settled?' · 해명됨':'')
+              ).join(' · ');
+        td.appendChild(s);
+      });
+      tr.appendChild(td);
+    }
+  });
+  const v=document.getElementById('vague');
+  if(G.vague){v.hidden=false; v.innerHTML='흐려진 증언 <b>'+G.vague+'건</b> — 시각과 장소는 남았지만 이름이 지워져 판에 올릴 수 없다.'}
+  else v.hidden=true;
+}
+
+/* ════════════════ 지목 · 종료 ════════════════ */
+function openAccuse(){
+  if(G.over)return;
+  const m=document.getElementById('modal'); m.innerHTML='';
+  const h=el('div','mh'); h.appendChild(el('h2','','첩자를 지목한다'));
+  h.appendChild(el('div','cost','셋이 모두 맞아야 한다. 하나라도 틀리면 어디가 틀렸는지 알려주지 않는다. 기회는 한 번. 전언을 옮긴 자는 목격자가 아니다.'));
+  m.appendChild(h);
+  const b=el('div','mb');
+  const mk=(lab,opts)=>{const f=el('div','fld'); f.appendChild(el('span','lbl',lab));
+    const s=document.createElement('select');
+    opts.forEach(o=>{const x=document.createElement('option'); x.value=o[0]; x.textContent=o[1]; s.appendChild(x)});
+    f.appendChild(s); b.appendChild(f); return s};
+  const sWho=mk('첩자',NPCS.map(n=>[n.id,n.ko+' · '+n.job]));
+  const sHr=mk('거짓말한 시각',HOURS.map((x,i)=>[i,x]));
+  const sWit=mk('그것을 증명하는 목격자',NPCS.map(n=>[n.id,n.ko]));
+  m.appendChild(b);
+  const f=el('div','mf');
+  const cancel=el('button','btn','물러선다'); cancel.onclick=()=>document.getElementById('scrim').hidden=true;
+  const go=el('button','btn btn-key','지목한다');
+  go.onclick=()=>{const ok=sWho.value===G.spy&&+sHr.value===G.theft-1&&sWit.value===G.W;
+                  end(ok, ok?null:'셋 중 하나 이상이 틀렸다.')};
+  f.appendChild(cancel); f.appendChild(go); m.appendChild(f);
+  document.getElementById('scrim').hidden=false;
+}
+function end(win,why){
+  G.over=true;
+  const m=document.getElementById('modal'); m.innerHTML='';
+  const h=el('div','mh');
+  h.appendChild(el('div','verdict '+(win?'win':'lose'), win?'첩자를 잡았다':'첩자는 빠져나갔다'));
+  if(why)h.appendChild(el('div','cost',why));
+  m.appendChild(h);
+  const b=el('div','mb'), rl=el('div','roles');
+  const line=(t,id,d)=>{const e=el('div'); e.innerHTML='<b>'+NK[id]+'</b> — '+t+' · '+d; rl.appendChild(e)};
+  line('첩자',G.spy,HOURS[G.theft]+'에 서고에 있었고 '+HOURS[G.theft-1]+'엔 안뜰을 지났다. '+RKO[G.base[G.spy][G.theft-1]]+'에 있었다고 거짓말했다.');
+  line('목격자',G.W,HOURS[G.theft-1]+' 안뜰에서 첩자를 봤다. 이 증언이 정답이었다.');
+  line('무관한 거짓말',G.R,HOURS[G.hTick]+' 뒷마당. 거짓말했지만 첩자가 아니다.');
+  line('심어진 기억',G.C,'첩자가 심은 거짓 기억으로 '+EUL(NK[G.framed])+' '+RKO[G.iRoom]+'에서 봤다고 믿었다. 본인은 '+RKO[G.truth[G.C][G.theft]]+'에 있었으므로 볼 수 없었다.');
+  line('목격자(무관)',G.B,'뒷마당에서 '+EUL(NK[G.R])+' 봤다.');
+  (G.recruits||[]).forEach(ac=>line(ac.at?'낮에 포섭된 공범':'포섭된 공범',ac.who,
+    (ac.at?'오늘 '+(10+ac.at)+'시에 '+RKO[posNow(ac.who)]+'에서 포섭됐다. ':'')+
+    HOURS[ac.hour]+'에 '+RKO[ac.room]+'에서 '+EUL(NK[G.spy])+' 봤다고 거짓말한다. '+
+    '본인은 '+RKO[G.truth[ac.who][ac.hour]]+'에 있었으므로 볼 수 없었다. '+
+    '그 시각을 들이대면 무너지고 시킨 사람과 이유를 말한다.'));
+  b.appendChild(el('div','lbl','실제 행적 — 세계 상태는 처음부터 확정되어 있었다'));
+  const tb=document.createElement('table'); tb.className='rev';
+  const tr=tb.createTHead().insertRow(); tr.appendChild(el('th','',''));
+  HOURS.forEach(x=>tr.appendChild(el('th',null,x)));
+  const bd=tb.createTBody();
+  NPCS.forEach(n=>{
+    const r=bd.insertRow(); const th=el('th','nm',n.ko); th.scope='row'; r.appendChild(th);
+    for(let t=0;t<6;t++) r.appendChild(el('td',(n.id===G.spy&&(t===G.theft||t===G.theft-1))?'hit':'',RKO[G.truth[n.id][t]]));
+  });
+  b.appendChild(tb); b.appendChild(rl);
+  /* 셈만 보여 주면 아무것도 알려 주지 않은 것이다 — 실물을 편다 */
+  b.appendChild(el('div','lbl','수집한 증언 '+G.cards.length+'장'));
+  if(!G.cards.length) b.appendChild(el('div','cost','한 장도 받아내지 못했다.'));
+  else{
+    const ct=document.createElement('table'); ct.className='rev';
+    const ch=ct.createTHead().insertRow();
+    ['시각','증언','말한 사람','출처','상태'].forEach(x=>ch.appendChild(el('th',null,x)));
+    const cb=ct.createTBody();
+    G.cards.slice().sort((x,y)=>x.hour-y.hour||x.subject.localeCompare(y.subject)).forEach(c=>{
+      const live=G.cards.filter(o=>o.subject===c.subject&&o.hour===c.hour&&!o.doubt&&!o.settled);
+      const clash=new Set(live.map(o=>o.room)).size>1;
+      const r=cb.insertRow();
+      r.appendChild(el('td',null,HOURS[c.hour]));
+      r.appendChild(el('td',null, c.kind==='self'
+        ? NK[c.subject]+' — '+RKO[c.room]+'에 있었다'
+        : EUL(NK[c.subject])+' '+RKO[c.room]+'에서 봤다'));
+      r.appendChild(el('td',null,NK[c.by]));
+      r.appendChild(el('td',null, c.kind==='self'?(c.viaSaw?'목격하며 밝힌 본인 위치':'본인 진술')
+        : c.told?(c.blurred?'전언 · 출처 불명':c.told+'에게 들음'):'직접 목격'));
+      const st=[]; if(c.revised)st.push('수정됨'); if(c.settled)st.push('해명됨');
+      if(c.doubt)st.push('무효 · 본인 위치와 모순'); if(clash&&!c.doubt&&!c.settled)st.push('모순 있음');
+      const td=el('td',(c.doubt||clash)?'hit':'',st.join(' · ')||'—');
+      r.appendChild(td);
+    });
+    b.appendChild(ct);
+  }
+  const anyH=NPCS.some(n=>history(n.id,99).length);
+  if(anyH){
+    b.appendChild(el('div','lbl','다섯 사람이 오늘 겪은 일'));
+    const ht=document.createElement('table'); ht.className='rev';
+    const hh=ht.createTHead().insertRow();
+    ['시각','사람','일','무슨 일이었나'].forEach(x=>hh.appendChild(el('th',null,x)));
+    const hb=ht.createTBody();
+    NPCS.forEach(n=>history(n.id,99).forEach(x=>{ const r=hb.insertRow();
+      r.appendChild(el('td',null,(10+x.at)+'시'));
+      r.appendChild(el('td',null,NK[n.id]));
+      r.appendChild(el('td',null,x.kind));
+      r.appendChild(el('td',null,x.why)); }));
+    b.appendChild(ht);
+  }
+  b.appendChild(el('div','lbl','읽지 못한 말 '+G.miss+'번'));
+  if(!G.miss) b.appendChild(el('div','cost','없다. 모든 말이 닿았다.'));
+  else{
+    const mt=document.createElement('table'); mt.className='rev';
+    const mh=mt.createTHead().insertRow();
+    ['상대','당신이 한 말','읽지 못한 까닭'].forEach(x=>mh.appendChild(el('th',null,x)));
+    const mb=mt.createTBody();
+    (G.misses||[]).forEach(x=>{ const r=mb.insertRow();
+      r.appendChild(el('td',null,NK[x.who]||'—'));
+      r.appendChild(el('td',null,x.text||'—'));
+      r.appendChild(el('td',null,x.why)); });
+    b.appendChild(mt);
+    b.appendChild(el('div','cost','읽지 못한 말은 시간을 쓰지 않았다. 세는 것은 인물이 아니라 해석기의 몫이다.'));
+  }
+  m.appendChild(b);
+  const f=el('div','mf'); const again=el('button','btn btn-key','새 사건'); again.onclick=()=>start();
+  f.appendChild(again); m.appendChild(f);
+  document.getElementById('scrim').hidden=false;
+  renderAll();
+}
+
+/* ════════════════ 부팅 ════════════════ */
+/* 방금 이 인물이 한 말 — 대화 기록에 넣을 한 덩어리 */
+function npcSince(mark){ return G.log.slice(mark).filter(m=>m.who==='npc'&&m.text).map(m=>m.text).join(' ') }
+async function talkAsync(text){
+  const id=G.sel; if(!id||G.over) return;
+  if(!LLM.on()){ const mk=G.log.length; talk(text); chatPush(id,text,npcSince(mk)); renderAll(); return }
+  say('me',null,text); G.skipMe=true;              // 내 말과 시계는 기다리지 않고 먼저 그린다
+  const wait={who:'sys',id:null,text:'…'};
+  G.log.push(wait); renderAll();
+  let I=null;
+  try{ I=await LLM.interpretAsync(id,text); LLM.pre.set(id+'|'+text,I) }catch(e){ LLM.note='해석 실패: '+e.message }
+  G.log=G.log.filter(m=>m!==wait);
+  const mark=G.log.length;
+  G.approved=null; G.approvedBy={};
+  talk(text);                                   // ← 결정적 엔진. 사실·기억·출처는 여기서만 정해진다
+  LLM.pre.delete(id+'|'+text);
+  const said=G.log.slice(mark).filter(m=>m.who==='npc');
+  if(!said.length){ chatPush(id,text,''); renderAll(); return }
+  /* 한 발화에 여러 사람이 답할 수 있다. 사람마다 제 몫만 다시 쓴다 —
+     한 사람의 문장이 다른 사람의 문장을 삼키면 안 된다. */
+  const acts=(G.interp&&G.interp.acts)||[];
+  const 화행=[acts.indexOf('GREET')>=0?'인사를 받았다 — 인사로 먼저 받아라':null,
+              (G.parse&&G.parse.yesno)?'예/아니오를 묻는 말이다 — 물음을 한 번 받아 준 뒤 답하라':null]
+             .filter(x=>x).join(' · ')||'곧바로 답한다';
+  const speakers=[...new Set(said.map(m=>m.id))];
+  for(const who of speakers){
+    const mine=said.filter(m=>m.id===who);
+    const ap=(G.approvedBy||{})[who];
+    try{
+      const payload = ap ? {인물:NK[who], 상황:'어젯밤 도난 사건 심문', 질문:text, 화행:화행, 허용된_사실:ap,
+                            원문:mine.map(m=>m.text).join(' ')}
+                         : {인물:NK[who], 상황:'가벼운 대화', 질문:text, 허용된_사실:'없음 — 사실을 말하지 말 것',
+                            원문:mine.map(m=>m.text).join(' ')};
+      const nat=await LLM.realizeAsync(who,payload);
+      if(nat){
+        const okay = ap ? validateCase(who,nat,ap) : validateSocial(who,nat);
+        if(okay){ mine.forEach((m,i)=>{ m.text = i===0?nat:'' }); LLM.rejects=LLM.rejects||0 }
+        else { LLM.rejects=(LLM.rejects||0)+1; LLM.note='표현 거부(사실 이탈) — 템플릿 유지' }
+      }
+    }catch(e){ LLM.note='표현 실패: '+e.message }
+    chatPush(who,text,mine.map(m=>m.text).filter(Boolean).join(' '));
+  }
+  G.log=G.log.filter(m=>m.text!=='');
+  renderAll();
+}
+function send(){
+  const i=document.getElementById('say'), t=i.value.trim();
+  if(!t)return; i.value='';
+  // 해석은 모델, 표현은 템플릿(모델이 규칙을 지키면 모델 문장). 새 패턴 converse() 는
+  // 더 큰 모델이 붙을 때까지 재워 둔다 — 7B 는 이 프롬프트를 감당하지 못한다.
+  talkAsync(t);
+}
+function openIntro(){
+  const m=document.getElementById('modal'); m.innerHTML='';
+  const h=el('div','mh');
+  h.appendChild(el('h2','','서고의 밤'));
+  h.appendChild(el('div','ibody','어젯밤 서고에서 기밀 문서가 사라졌다. 성에 남아 있던 다섯 사람 중 하나가 첩자다. 해가 지기 전에 찾아내야 한다.'));
+  m.appendChild(h);
+  const b=el('div','mb');
+  const step=(n,t,d)=>{const e=el('div','istep');
+    e.appendChild(el('div','ieye',n));
+    e.appendChild(el('div','ihead',t));
+    const p=el('div','ibody'); p.innerHTML=d; e.appendChild(p); b.appendChild(e)};
+  step('첫째 · 말을 건다','자유롭게 타이핑하시오',
+    '왼쪽에서 사람을 고르고 아무렇게나 물으면 된다. 목록에서 고르는 것이 아니다.<br>'+
+    '<span style="color:var(--fog-dim)">“어젯밤 어디 있었소?” · “자정엔 누구를 봤소?” · “서고엔 누가 드나들었소?” · “그때 또 누가 있었소?”</span><br>'+
+    '알아듣지 못한 말은 시간을 잡아먹지 않는다. 인물마다 규칙 세 줄이 화면에 적혀 있으니, 그걸 보고 질문을 골라라.');
+  step('둘째 · 증언판을 읽는다','오른쪽 표가 전부다',
+    '들은 이야기가 자동으로 쌓인다. 한 사람의 같은 시각에 두 장소가 적히면 <b style="color:#C4544A">붉게</b> 표시된다.<br>'+
+    '누가 옳은지는 알려주지 않는다. 그건 당신이 정한다.');
+  step('셋째 · 들이댄다','남의 말을 인용해 따진다',
+    '<span style="color:var(--fog-dim)">“카일은 자정에 당신이 안뜰에 있었다고 하던데.”</span><br>'+
+    '손에 없는 증언을 지어내 떠볼 수도 있다. 정직한 사람에겐 역효과가 난다.');
+  step('시간','열여덟 번 말을 걸 수 있다',
+    '말을 한 번 걸 때마다 시간이 흐른다. <b>10시에 시작해 16시가 되면 첩자는 성문을 빠져나간다.</b><br>'+
+    '알아듣지 못한 말은 시간을 쓰지 않는다. 도면을 보는 것도, 증언판을 읽는 것도 공짜다.<br>'+
+    '지목은 언제든 할 수 있다 — 오른쪽 위 <b>첩자 지목 ▸</b> 단추. 기회는 한 번뿐이다.');
+  const k=el('div','istep');
+  k.appendChild(el('div','ieye','반드시 알아야 할 것'));
+  const kk=el('div','ibody');
+  kk.innerHTML='<b>목격은 같은 방에서만 가능하다.</b> 다른 방에 있었다면서 무언가를 봤다고 하면, 그 기억은 성립하지 않는다.<br>'+
+    '<b>거짓말한다고 다 첩자는 아니다.</b> 감출 것이 있는 사람은 여럿이다.<br>'+
+    '<b>지목은 셋이 모두 맞아야 한다</b> — 첩자 · 그가 거짓말한 시각 · 그것을 증명한 목격자. 기회는 한 번.';
+  k.appendChild(kk); b.appendChild(k);
+  m.appendChild(b);
+  const f=el('div','mf');
+  const go=el('button','btn btn-key','시작한다');
+  go.onclick=()=>{document.getElementById('scrim').hidden=true; document.getElementById('say').focus()};
+  f.appendChild(go); m.appendChild(f);
+  document.getElementById('scrim').hidden=false;
+}
+const DEMO = (typeof location!=='undefined') && /[?&]demo/.test(location.search);
+function start(){
+  document.getElementById('scrim').hidden=true;
+  if(DEMO){                       // 도른이 첩자, 자정 절도, 카일이 목격자 — 늘 같은 판
+    for(let i=0;i<4000;i++){ newCase(); if(G.spy==='dorn'&&G.theft===3&&G.W==='kyle') break }
+  } else newCase();
+  G.sel='kyle'; renderAll(); openIntro();
+}
+document.getElementById('send').onclick=send;
+document.getElementById('say').onkeydown=e=>{ if(e.key==='Enter')send() };
+document.getElementById('accuse').onclick=openAccuse;
+document.getElementById('newgame').onclick=start;
+document.getElementById('help').onclick=openIntro;
+/* 로컬 모델이 있으면 알아서 쓴다. 큰 모델을 손으로 붙이면 그쪽이 이긴다. */
+const CFGKEY='seogo.llm';
+function cfgLoad(){ try{ return JSON.parse(localStorage.getItem(CFGKEY)||'null') }catch(e){ return null } }
+function cfgSave(c){ try{ c?localStorage.setItem(CFGKEY,JSON.stringify(c)):localStorage.removeItem(CFGKEY) }catch(e){} }
+function openAI(){
+  const cur=cfgLoad()||{provider:'anthropic',model:'claude-opus-5',endpoint:'',key:''};
+  const m=document.getElementById('modal'); m.innerHTML='';
+  const h=el('div','mh'); h.appendChild(el('h2','','AI 연결'));
+  h.appendChild(el('div','ibody','엔진은 사실을 쥐고, 모델은 말을 만든다. 모델을 바꿔도 사실은 바뀌지 않는다.'));
+  m.appendChild(h);
+  const b=el('div','mb');
+  const row=(label,node,hint)=>{ const d=el('div','istep');
+    d.appendChild(el('div','ihead',label)); d.appendChild(node);
+    if(hint)d.appendChild(el('div','ibody',hint)); b.appendChild(d); return node };
+  const sel=document.createElement('select');
+  [['anthropic','Claude (api.anthropic.com)'],['openai','OpenAI 호환 엔드포인트 (SAM·라우터 등)'],
+   ['ollama','로컬 Ollama'],['mock','끄기 — 템플릿만']].forEach(([v,t])=>{
+    const o=document.createElement('option'); o.value=v; o.textContent=t;
+    if(v===cur.provider)o.selected=true; sel.appendChild(o) });
+  sel.style.cssText='width:100%;padding:6px';
+  row('공급자',sel);
+  const mk=t=>{ const i=document.createElement('input'); i.style.cssText='width:100%;padding:6px'; i.value=t||''; return i };
+  const mi=row('모델',mk(cur.model),'예: claude-opus-5 · claude-sonnet-5 · claude-haiku-4-5');
+  const ei=row('엔드포인트',mk(cur.endpoint),'OpenAI 호환일 때만. 예: https://sam.soonsoon.ai/v1');
+  const ki=row('키',mk(cur.key),'이 브라우저에만 저장된다. 공용 컴퓨터에서는 넣지 마라. '+
+    '공유 링크 사본에서는 바깥 연결이 막혀 있어 AI가 켜지지 않는다 — 원본 HTML 파일로 열어야 한다.');
+  ki.type='password';
+  m.appendChild(b);
+  const f=el('div','mf');
+  const off=el('button','btn','끄기');
+  off.onclick=()=>{ cfgSave(null); LLM.use('mock'); LLM.note=null;
+    document.getElementById('scrim').hidden=true; renderAll() };
+  const ok=el('button','btn btn-key','연결한다');
+  ok.onclick=()=>{
+    const c={provider:sel.value,model:mi.value.trim(),endpoint:ei.value.trim(),key:ki.value.trim()};
+    if(c.provider==='mock'){ off.onclick(); return }
+    cfgSave(c); LLM.use(c.provider,c); LLM.note=null;
+    say('sys',null,'인물들이 당신의 말을 알아듣는다. ('+(c.model||c.provider)+')');
+    document.getElementById('scrim').hidden=true; renderAll();
+  };
+  f.appendChild(off); f.appendChild(ok); m.appendChild(f);
+  document.getElementById('scrim').hidden=false;
+}
+document.getElementById('aibtn').onclick=openAI;
+(async()=>{
+  const c=cfgLoad();
+  if(c&&c.provider&&c.provider!=='mock'){
+    LLM.use(c.provider,c); LLM.note=null;
+    say('sys',null,'인물들이 당신의 말을 알아듣는다. ('+(c.model||c.provider)+')');
+    renderAll(); return;
+  }
+  try{
+    const p=await LLM.probe();
+    if(p.ok&&p.models.length){
+      LLM.use('ollama',{model:p.models[0]});
+      LLM.note=null;
+      say('sys',null,'인물들이 당신의 말을 알아듣는다. ('+p.models[0]+')');
+    } else {
+      LLM.note='모델 없음 — 정해진 문장으로 답한다. 오른쪽 위 AI 에서 붙일 수 있다.';
+    }
+  }catch(e){ LLM.note='모델에 닿지 못했다 — 정해진 문장으로 답한다.'; }
+  renderAll();
+})();
+document.getElementById('scrim').onclick=e=>{ if(e.target.id==='scrim'&&!G.over) document.getElementById('scrim').hidden=true };
+start();
+</script>
+
+</body>
+</html>
