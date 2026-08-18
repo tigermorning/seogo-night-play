@@ -302,6 +302,10 @@ const NPCS=[
       none:'아무도 못 봤소. 초소는 조용했소.',
       empty:(sp,r)=>sp+' '+r+'은 비어 있었소.',
       nada:w=>EUN(w)+' 내 알 바가 아니오.',
+      sure:'확실하오. 내가 본 것이오.',
+      likely:'…그렇게 기억하오.',
+      unsure:'…확실치 않소. 똑똑히 보지는 못했소.',
+      whatSure:'무엇이 확실한지 말이오? 분명히 말해 주시오.',
       selfq:'나 말이오?',
       dry:'그 얘긴 아까 다 했소. 더 보탤 게 없소.',
       shut:'…이만하겠소.',
@@ -372,6 +376,10 @@ const NPCS=[
       none:'아무도… 못 봤어요.',
       empty:(sp,r)=>sp+' '+r+'엔 아무도 없었어요.',
       nada:w=>EUN(w)+'… 저는 잘 몰라요.',
+      sure:'네… 그건 확실해요.',
+      likely:'…그랬던 것 같아요.',
+      unsure:'…잘 모르겠어요. 확실친 않아요.',
+      whatSure:'저… 무엇이 확실한지 말씀이세요?',
       selfq:'저… 저요?',
       dry:'그건 아까 말씀드렸어요. 더는 없어요…',
       shut:'…죄송해요. 더는 못 하겠어요.',
@@ -442,6 +450,10 @@ const NPCS=[
       none:'글쎄요, 본 사람은 없습니다.',
       empty:(sp,r)=>sp+' '+r+'엔 아무도 없었지요.',
       nada:w=>EUN(w)+' 제가 보탤 게 없군요.',
+      sure:'확실합니다. 이 나이에 헛말은 안 하지요.',
+      likely:'뭐, 그렇게 기억합니다만.',
+      unsure:'글쎄요. 장담은 못 하겠군요.',
+      whatSure:'허, 무엇을 말씀하시는 겁니까?',
       selfq:'제 얘기요?',
       dry:'그건 이미 말씀드렸지요. 새로울 게 없습니다.',
       shut:'…오늘은 여기까지 하지요.',
@@ -513,6 +525,10 @@ const NPCS=[
       none:'본 사람 없다.',
       empty:(sp,r)=>sp+' '+r+'. 아무도 없었다.',
       nada:w=>EUN(w)+' 모른다.',
+      sure:'확실하다.',
+      likely:'그렇게 기억한다.',
+      unsure:'확실하지 않다.',
+      whatSure:'무엇을 묻는가.',
       selfq:'나?',
       dry:'말했다. 더 없다.',
       shut:'끝이다.',
@@ -583,6 +599,10 @@ const NPCS=[
       none:'아무도 못 봤어요!',
       empty:(sp,r)=>sp+' '+r+'엔 아무도 없었어요!',
       nada:w=>EUN(w)+'요? 그건 모르겠어요.',
+      sure:'네! 그건 확실해요!',
+      likely:'아마… 그랬던 것 같아요!',
+      unsure:'어… 그건 잘 모르겠어요.',
+      whatSure:'어? 뭐가 확실하냐고요?',
       selfq:'저요? 아 저야…',
       dry:'그건 아까 다 말했잖아요! 더 없어요.',
       shut:'…',
@@ -878,7 +898,7 @@ function voice(id,text){ if(text) say('npc',id,text); }
 const AT =(who,h,room)=>'AT|'+who+'|'+h+'|'+room;
 const OBS=(obs,h,who,room)=>'OBS|'+obs+'|'+h+'|'+who+'|'+room;
 const newCtx=()=>({ground:new Map(),topic:{hour:null,room:null,person:null,hourAt:-9,roomAt:-9,personAt:-9},
-  turns:[],askedQ:new Map(),greeted:false,acked:false,approached:false,voiced:new Set(),
+  turns:[],askedQ:new Map(),greeted:false,acked:false,approached:false,voiced:new Set(),lastConf:null,
   stance:new Map(),    // 스스로 밝힌 태도 — 사실이 아니라 "말할 수 있는 것"의 경계
   framed:new Set()});  // 말버릇을 이미 보인 행위
 
@@ -898,6 +918,9 @@ const RE={
      안심으로 읽혀 신뢰가 거꾸로 오르던 자리다. 안심의 뜻이 분명한 꼴만 남긴다. */
   reassure:/괜찮|안심|걱정 마|걱정하지|해치지|도와|편하게|천천히|겁내|미안|사과|진정|편히|무섭|두려|보호|믿어도|믿으셔도|나를 믿|날 믿/,
   // 불신은 압박이다 — "믿을 수 없소" 가 아무 갈래에도 안 걸려 죽던 자리
+  /* 재확인 — 새 사실을 묻지 않고 직전 답의 확신도를 묻는다.
+     압박 표지(거짓·숨기다 등)는 press 가 먼저 잡는다. 같은 뜻이어도 강도가 다르면 다른 반응이 옳다. */
+  confirm:/확실|틀림없|틀림 없|분명하|분명한가|분명합|분명해|분명히\s*[가-힣]{0,3}(?:소|나요|습니까|어요|니|냐)|정말이|정말인가|정말입|정말요|정말(?=[가-힣\s]{0,6}[?？])|참말|진짜(?:요|입|인가|예요|에요)|사실이(?:오|냐|죠|에요|예요|ㅂ니까)/,
   press:/거짓|숨기|숨긴|사실대로|바른대로|다 알|이상하|말이 안|솔직|실토|이실직고|추궁|똑바로|수상|자백|불어|털어|했잖|범인|첩자|훔쳤|도둑|왜 그랬|변명|둘러대|못 믿|믿을 수 없|믿기 어렵|믿기지 않/,
   /* 남의 말을 옮기는 표지. "봤다던데" 처럼 어간이 무엇이든 "-다던데/-다더군" 은 인용이다 —
      동사마다 따로 적으면 늘 빠지는 게 생긴다. */
@@ -936,7 +959,8 @@ const ACTKO={ASK_WHEREABOUTS:'행적 질문',ASK_SIGHTING:'목격 질문',ASK_AB
 /* 행위마다 지는 의무 — 정보 의무가 없는 행위는 기억을 읽지도, 판에 적지도, 시간을 쓰지도 않는다 */
 const OBLIG={GREET:'ack',SOCIAL:'ack',UNKNOWN:'ack',HYPOTHETICAL:'ack',REMARK:'ack',OPINION:'ack',
              ASK_WHEREABOUTS:'answer',ASK_SIGHTING:'answer',ASK_ABOUT:'answer',ASK_ROOM:'answer',
-             FOLLOW_UP:'answer',ASK_SUSPECT:'answer',PRESENT:'react',PRESS:'react',REASSURE:'react'};
+             FOLLOW_UP:'answer',ASK_SUSPECT:'answer',PRESENT:'react',PRESS:'react',REASSURE:'react',
+             ASK_CONFIRM:'react'};
 const mayRetrieve=act=>OBLIG[act]==='answer';
 /* 왜 못 알아들었는지 — 셈이 아니라 사람에게 할 말로 남긴다 */
 function whyMiss(f){
@@ -1121,6 +1145,8 @@ function parse(text,ignoreSocial,selfId){
   // "카일이 당신을 봤다던데" — 인용이 나를 가리키면 들이대는 말이다
   else if(RE.quote.test(s))    act=(room||you)?'PRESENT':(subj?'ASK_ABOUT':'UNKNOWN');
   else if(RE.press.test(s))    act='PRESS';
+  // 재확인은 대상이 직전 답이다. 개체가 실려 있으면 그건 새 질문이다.
+  else if(RE.confirm.test(s)&&!hours.length&&!rooms.length&&!person&&!subj&&!you) act='ASK_CONFIRM';
   else if(sight)               act=person?'ASK_ABOUT':(room?'ASK_ROOM':'ASK_SIGHTING');
   // 들이대는 말에는 주어가 있어야 한다. 말 거는 상대의 이름은 주어가 아니라 부르는 말이다 —
   // "경비병 카일이죠? 어젯밤에도 서고에서 경비를 섰나요?" 는 들이대는 말이 아니라 묻는 말이다.
@@ -1320,6 +1346,7 @@ function planTurn(id,Q,keep,corr,kind){
 /* ═══════════ ⑥ 표현 ═══════════ */
 function realize(id,Q,plan){
   const v=N[id].v, t=N[id].t, out=[];
+  G.ctx[id].lastConf=null;                 // 재확인이 읽는다 — 방금 말한 것을 얼마나 믿는가
   G.approvedBy=G.approvedBy||{};
   G.approved={npc:id, act:Q.act, answer_type:Q.answer_type||null, refuse:plan.refuse?plan.refuse.kind:null,
     facts:plan.groups.map(({g,kind})=>({kind, hours:g.hours.map(h=>HOURS[h]), room:RKO[g.room],
@@ -1337,13 +1364,17 @@ function realize(id,Q,plan){
     if(st.said===1){ const why=N[id].reason[key]; return body+(why?' '+why:'') }
     return v.again+' '+body;
   }
+  // 사실 묶음이 없는 답(「아무도 못 봤소」·「비어 있었소」)도 주장이다 — 재확인에 답할 수 있어야 한다
+  if(!plan.groups.length&&!plan.refuse) G.ctx[id].lastConf=1;
   plan.groups.forEach(({g,drop,additive,kind})=>{
     if(kind==='self'){
       g.rows.forEach(r=>addCard({kind:'self',subject:r.subject,room:r.room,hour:r.hour,by:id,mark:'●',conf:1}));
+      G.ctx[id].lastConf=Math.min(G.ctx[id].lastConf==null?1:G.ctx[id].lastConf,1);
       out.push(drop.hour&&drop.room?v.onlywho(RKO[g.room]):v.loc(spanLoc(g.hours),RKO[g.room]));
       return;
     }
     const cf=Math.min(...g.rows.map(r=>conf(id,r)));
+    G.ctx[id].lastConf=Math.min(G.ctx[id].lastConf==null?cf:G.ctx[id].lastConf,cf);
     const who=andList(g.who.map(x=>NK[x]));
     if(cf<.34){ out.push(v.blank(spanSaw(g.hours))); return }
     if(cf<.66){ G.vague+=g.rows.length; out.push(v.hazy(spanSaw(g.hours),RKO[g.room])); return }
@@ -1568,7 +1599,8 @@ const INTERP_SCHEMA={type:'object',additionalProperties:false,
   required:['acts','answer_type','case_relevance','social_draft'],
   properties:{
     acts:{type:'array',items:{type:'string',enum:['GREET','SOCIAL','REMARK','HYPOTHETICAL','OPINION',
-      'ASK_WHEREABOUTS','ASK_SIGHTING','ASK_ROOM','ASK_ABOUT','FOLLOW_UP','PRESENT','PRESS','REASSURE','UNKNOWN']}},
+      'ASK_WHEREABOUTS','ASK_SIGHTING','ASK_ROOM','ASK_ABOUT','FOLLOW_UP','PRESENT','PRESS','REASSURE',
+      'ASK_CONFIRM','UNKNOWN']}},
     answer_type:{type:'string',enum:['where','who','when','timerange','why','activity','relation','confirm','none']},
     case_relevance:{type:'number'},
     social_draft:{type:'string'},
@@ -1650,7 +1682,10 @@ const LLM = {
     const sys=[
 '너는 한국어 추리게임의 대화 해석기다. 플레이어 발화를 분석해 JSON 하나만 출력한다. 사실을 만들지 않는다.',
 '',
-'acts: ["GREET","SOCIAL","REMARK","HYPOTHETICAL","OPINION","ASK_WHEREABOUTS","ASK_SIGHTING","ASK_ROOM","ASK_ABOUT","FOLLOW_UP","PRESENT","PRESS","REASSURE","UNKNOWN"] 중에서만 고른다(복수 가능).',
+'acts: ["GREET","SOCIAL","REMARK","HYPOTHETICAL","OPINION","ASK_WHEREABOUTS","ASK_SIGHTING","ASK_ROOM","ASK_ABOUT","FOLLOW_UP","PRESENT","PRESS","REASSURE","ASK_CONFIRM","UNKNOWN"] 중에서만 고른다(복수 가능).',
+'  "ASK_CONFIRM" 은 새 사실을 묻지 않고 **직전 답이 확실한지** 되묻는 것이다 — "확실하오?" "틀림없소?" "정말이오?".',
+'  거짓·숨김을 들이대며 몰아붙이는 말("거짓말 아니오?" "숨기는 게 있소")은 ASK_CONFIRM 이 아니라 PRESS 다.',
+'  시각·장소·사람이 실려 있으면 재확인이 아니라 그 개체에 대한 질문이다("23시에 벤을 봤소?" → ASK_SIGHTING).',
 'answer_type: "where"|"who"|"when"|"timerange"|"why"|"activity"|"relation"|"confirm"|"none"',
 '  "뭘 했나요/뭐 하고 있었나요" 처럼 한 일을 묻는 것은 activity 다.',
 'case_relevance: 어젯밤 서고 도난 사건(행적·목격·시각·장소)을 실제로 묻는가. 0.0~1.0.',
@@ -2074,7 +2109,9 @@ function resolveTurn(id,f){
 function chargePatience(id,Q){
   const t=N[id].t;
   G.pat[id]=Math.max(0,G.pat[id]+(Q.act==='PRESS'?COST_PUSH*(t.pressMult||1)
-    :Q.act==='PRESENT'?COST_PUSH:Q.act==='REASSURE'?-12:COST_ASK));
+    :Q.act==='PRESENT'?COST_PUSH:Q.act==='REASSURE'?-12
+    :Q.act==='ASK_CONFIRM'?COST_ASK*(t.pressMult||1)      // 재확인도 압박이다. 미라는 약하고 도른은 끄떡없다
+    :COST_ASK));
 }
 
 /* 감추던 것을 털어놓는 말. **사실은 이 판에서 만들고, 사유만 인물에서 가져온다.**
@@ -2087,6 +2124,15 @@ function tellSecret(id){
 /* 반응 — 답이 아니라 반응이다. 다독임·추궁·들이대기는 기억을 검색하지 않는다. */
 function reactTurn(id,Q,f){
   const c=N[id], v=c.v, t=c.t;
+  /* 재확인 — 새 사실을 내주지 않는다. 방금 말한 것을 얼마나 믿는지만 밝힌다.
+     확신도 구간은 realize 가 대사를 고를 때 쓰는 것과 같다(.34 / .66). */
+  if(Q.act==='ASK_CONFIRM'){
+    const cf=G.ctx[id].lastConf;
+    if(cf==null){ voice(id,v.whatSure); renderAll(); return true }   // 아직 아무 사실도 말하지 않았다
+    voice(id, cf>=.9?v.sure : cf>=.66?v.likely : v.unsure);
+    remember(id,'재확인','당신이 방금 한 말을 다시 확인했다');
+    spend(); renderAll(); return true;
+  }
   if(Q.act==='REASSURE'){
     G.reassured[id]++;
     if(t.reassurable&&G.reassured[id]>=2&&!G.toldSecret[id]){
