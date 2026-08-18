@@ -65,6 +65,11 @@ main{display:grid; grid-template-columns:270px minmax(0,1fr) minmax(0,392px); ga
 .who.shut{opacity:.6}
 .who.shut .nm::after{content:' · 침묵'; font-size:10px; color:var(--ox-hi); font-family:var(--ff-body)}
 .roster{display:flex; flex-direction:column; gap:6px}
+/* SPUM Studio 픽셀 초상 — 붙이지 않으면 아무 자리도 차지하지 않는다 */
+.face{width:26px; height:26px; flex:0 0 auto; margin-right:2px; border-radius:3px;
+  image-rendering:pixelated; object-fit:contain; background:#00000022}
+.face-lg{width:52px; height:52px; margin-left:auto; border-radius:4px;
+  image-rendering:pixelated; object-fit:contain; background:#00000022}
 
 .card-id{border:1px solid var(--line); background:var(--stone-800); border-top:2px solid var(--brass-dim)}
 .card-id .cih{padding:9px 12px; border-bottom:1px solid var(--line)}
@@ -1653,10 +1658,11 @@ function mergeSlots(f,o){
   return g;
 }
 const LLM = {
-  provider:'mock', endpoint:'http://localhost:11434', model:null, key:null, noSchema:false,
+  provider:'mock', endpoint:'http://localhost:11434', aBase:'', model:null, key:null, noSchema:false,
   pre:new Map(),
   use(p,opt){ LLM.provider=p; opt=opt||{};
     if(opt.model)LLM.model=opt.model; if(opt.endpoint)LLM.endpoint=opt.endpoint;
+    if(p==='anthropic') LLM.aBase=opt.endpoint||'';                   // 비면 api.anthropic.com
     if(opt.key!==undefined)LLM.key=opt.key; LLM.noSchema=false; },
   on(){ return LLM.provider!=='mock' },
   big(){ return LLM.provider==='anthropic'||LLM.provider==='openai' },   // 지시를 지키는 크기의 모델
@@ -1670,7 +1676,9 @@ const LLM = {
       if(schema&&!LLM.noSchema) oc.format={type:'json_schema',schema:schema};
       const body={model:LLM.model,max_tokens:2000,system:sys,messages:[{role:'user',content:user}]};
       if(Object.keys(oc).length) body.output_config=oc;
-      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      /* SAM 은 같은 Messages 규약을 /v2/anthropic 에 그대로 얹어 준다 — 이 길로 가면 json_schema 가 살아 있다 */
+      const base=(LLM.aBase||'https://api.anthropic.com').replace(/\/$/,'');
+      const r=await fetch(base+'/v1/messages',{method:'POST',
         headers:{'content-type':'application/json','x-api-key':LLM.key,
                  'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
         body:JSON.stringify(body)});
@@ -1687,7 +1695,11 @@ const LLM = {
                   temperature:0,max_tokens:2000};
       if(schema&&!LLM.noSchema) body.response_format={type:'json_object'};
       const r=await fetch(LLM.endpoint.replace(/\/$/,'')+'/chat/completions',{method:'POST',
-        headers:Object.assign({'content-type':'application/json'},LLM.key?{authorization:'Bearer '+LLM.key}:{}),
+        /* SAM 공식 문서: API 키는 X-API-Key, Bearer 는 id.soonsoon JWT 자리다.
+           점이 없는 키는 JWT 가 아니므로 두 머리 다 실어 보낸다 — 어느 라우터든 받는다. */
+        headers:Object.assign({'content-type':'application/json'},
+          LLM.key?(/\./.test(LLM.key)?{authorization:'Bearer '+LLM.key}
+                                     :{'x-api-key':LLM.key,authorization:'Bearer '+LLM.key}):{}),
         body:JSON.stringify(body)});
       if(!r.ok) throw new Error('openai '+r.status);
       const j=await r.json();
@@ -2401,12 +2413,23 @@ function renderPlan(){
     d.appendChild(c); p.appendChild(d);
   });
 }
+/* ═══════════ SPUM Studio 초상 슬롯 ═══════════
+   SPUM Studio(spum.soonsoon.ai/studio) → Cast 에서 인물을 만들고 한 프레임을 PNG 로 내보낸 뒤,
+   그 data URL 을 아래에 붙인다. `data:image/png;base64,...` 그대로 넣으면 된다.
+   비어 있으면 지금까지처럼 글자만 나온다 — 단일 파일 원칙도, 외부 요청도 건드리지 않는다. */
+const FACE={ kyle:'', mira:'', dorn:'', howell:'', ben:'' };
+function faceEl(id,cls){
+  const src=FACE[id]; if(!src) return null;
+  const i=document.createElement('img');
+  i.className=cls||'face'; i.src=src; i.alt=''; return i;
+}
 function renderRoster(){
   const w=document.getElementById('roster'); w.innerHTML='';
   NPCS.forEach(n=>{
     const pct=Math.min(100,G.pat[n.id]/n.lim*100), shut=G.pat[n.id]>=n.lim;
     const b=el('button','who'+(G.sel===n.id?' on':'')+(shut?' shut':''));
-    const l1=el('div','l1'); l1.appendChild(el('span','nm',n.ko));
+    const l1=el('div','l1'); const fc=faceEl(n.id); if(fc)l1.appendChild(fc);
+    l1.appendChild(el('span','nm',n.ko));
     l1.appendChild(el('span','jb',n.job.split(' · ')[0]));
     l1.appendChild(el('span','st',RKO[posNow(n.id)])); b.appendChild(l1);
     const bar=el('div','bar'); const i=el('i',pct>=100?'hot':pct>=60?'mid':''); i.style.width=pct+'%';
@@ -2468,6 +2491,7 @@ function renderId(){
   if(!G.sel){ w.appendChild(el('div','cost','왼쪽에서 말을 걸 사람을 고르시오.')); return }
   const n=N[G.sel], d=el('div','card-id');
   const h=el('div','cih'); h.appendChild(el('div','cin',n.ko)); h.appendChild(el('div','cij',n.job));
+  const fcL=faceEl(G.sel,'face-lg'); if(fcL)h.appendChild(fcL);
   d.appendChild(h);
   const bx=el('div','prof');
   n.profile.forEach(([k,t])=>{const r=el('div','prow');
@@ -2780,6 +2804,11 @@ function openIntro(){
   const f=el('div','mf');
   const go=el('button','btn btn-key','시작한다');
   go.onclick=()=>{document.getElementById('scrim').hidden=true; document.getElementById('say').focus()};
+  const lic=el('div','','');
+  lic.style.cssText='margin-right:auto;align-self:center;text-align:left;font-size:11px;color:var(--fog-dim);line-height:1.5';
+  lic.innerHTML='SPUM 해커톤 출품작 · SPUM Unified Commercial License (Creator Pro) 아래 만들었다.<br>'+
+    '<a href="https://spum.soonsoon.ai/dashboard.html#dashboard-permissions" target="_blank" rel="noopener" style="color:var(--fog-dim)">권한과 라이선스 확인 ▸</a>';
+  f.appendChild(lic);
   f.appendChild(go); m.appendChild(f);
   document.getElementById('scrim').hidden=false;
 }
@@ -2798,10 +2827,13 @@ document.getElementById('newgame').onclick=start;
 document.getElementById('help').onclick=openIntro;
 /* 로컬 모델이 있으면 알아서 쓴다. 큰 모델을 손으로 붙이면 그쪽이 이긴다. */
 const CFGKEY='seogo.llm';
+const SAM_EP='https://sam.soonsoon.ai/openai/v1';   // SPUM Creator Pro 에 포함된 SAM 라우터
+const SAM_A='https://sam.soonsoon.ai/v2/anthropic';  // 같은 SAM, Claude Messages 규약 — json_schema 가 산다
 function cfgLoad(){ try{ return JSON.parse(localStorage.getItem(CFGKEY)||'null') }catch(e){ return null } }
 function cfgSave(c){ try{ c?localStorage.setItem(CFGKEY,JSON.stringify(c)):localStorage.removeItem(CFGKEY) }catch(e){} }
 function openAI(){
-  const cur=cfgLoad()||{provider:'anthropic',model:'claude-opus-5',endpoint:'',key:''};
+  const cur=cfgLoad()||{provider:'sam',model:'claude-haiku',endpoint:'',key:''};
+  if(cur.provider==='anthropic'&&cur.endpoint===SAM_A) cur.provider='sam';   // SAM 으로 붙여 둔 것은 SAM 으로 보인다
   const m=document.getElementById('modal'); m.innerHTML='';
   const h=el('div','mh'); h.appendChild(el('h2','','AI 연결'));
   h.appendChild(el('div','ibody','엔진은 사실을 쥐고, 모델은 말을 만든다. 모델을 바꿔도 사실은 바뀌지 않는다.'));
@@ -2811,15 +2843,16 @@ function openAI(){
     d.appendChild(el('div','ihead',label)); d.appendChild(node);
     if(hint)d.appendChild(el('div','ibody',hint)); b.appendChild(d); return node };
   const sel=document.createElement('select');
-  [['anthropic','Claude (api.anthropic.com)'],['openai','OpenAI 호환 엔드포인트 (SAM·라우터 등)'],
+  [['sam','SAM · Claude 호환 — 구조화 출력 유지 (권장)'],
+   ['anthropic','Claude (api.anthropic.com)'],['openai','SAM · OpenAI 호환 엔드포인트'],
    ['ollama','로컬 Ollama'],['mock','끄기 — 템플릿만']].forEach(([v,t])=>{
     const o=document.createElement('option'); o.value=v; o.textContent=t;
     if(v===cur.provider)o.selected=true; sel.appendChild(o) });
   sel.style.cssText='width:100%;padding:6px';
   row('공급자',sel);
   const mk=t=>{ const i=document.createElement('input'); i.style.cssText='width:100%;padding:6px'; i.value=t||''; return i };
-  const mi=row('모델',mk(cur.model),'예: claude-opus-5 · claude-sonnet-5 · claude-haiku-4-5');
-  const ei=row('엔드포인트',mk(cur.endpoint),'OpenAI 호환일 때만. 예: https://sam.soonsoon.ai/v1');
+  const mi=row('모델',mk(cur.model),'SAM 별칭: claude-haiku · claude-sonnet-5 · claude-opus-5 · claude-fable-5');
+  const ei=row('엔드포인트',mk(cur.endpoint),'SAM 을 고르면 자동이다. OpenAI 호환은 비우면 '+SAM_EP);
   const ki=row('키',mk(cur.key),'이 브라우저에만 저장된다. 공용 컴퓨터에서는 넣지 마라. '+
     'Claude·OpenAI 호환은 공개 링크 사본에서도 켜진다. '+
     '로컬 올라마는 이 컴퓨터에서 열었을 때만 닿는다 — 공개 링크에서는 안 된다. '+
@@ -2834,6 +2867,14 @@ function openAI(){
   ok.onclick=()=>{
     const c={provider:sel.value,model:mi.value.trim(),endpoint:ei.value.trim(),key:ki.value.trim()};
     if(c.provider==='mock'){ off.onclick(); return }
+    if(c.provider==='sam'){                          // 같은 SAM 을 Claude 규약으로 — 스키마가 살아 있는 길
+      c.provider='anthropic'; c.endpoint=SAM_A;
+      if(!c.model) c.model='claude-haiku';
+    }
+    else if(c.provider==='openai'){                   // 비워 두면 SAM 으로 간다 — 키만 붙이면 끝
+      if(!c.endpoint) c.endpoint=SAM_EP;
+      if(!c.model) c.model='claude-haiku';
+    }
     cfgSave(c); LLM.use(c.provider,c); LLM.note=null;
     say('sys',null,'인물들이 당신의 말을 알아듣는다. ('+(c.model||c.provider)+')');
     document.getElementById('scrim').hidden=true; renderAll();

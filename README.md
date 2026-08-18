@@ -52,8 +52,12 @@
 
 | 공급자 | 넣을 것 |
 |---|---|
-| **OpenAI 호환** (순순 SAM) | 엔드포인트 `https://sam.soonsoon.ai/openai/v1` · 모델 `claude-haiku` 또는 `claude-sonnet-5` · 자기 키 |
+| **SAM · Claude 호환** (권장) | **키만.** 주소(`https://sam.soonsoon.ai/v2/anthropic`)와 모델(`claude-haiku`)은 자동으로 채워진다 |
+| **SAM · OpenAI 호환** | 비워 두면 `https://sam.soonsoon.ai/openai/v1` 로 간다 · 모델 `claude-haiku` 또는 `claude-sonnet-5` · 자기 키 |
 | **Claude** | 모델 `claude-sonnet-5` 또는 `claude-haiku-4-5` · 자기 키 |
+
+SAM 키는 https://sam.soonsoon.ai/api-keys 에서 발급한다. 목록에 보이는
+`sam-xxxxxxxx` 는 앞자리 표시일 뿐이니, 전체 보기나 재발급으로 원문을 꺼내야 한다.
 
 **키는 각자 자기 브라우저에만 저장된다**(`localStorage`). 서로 공유되지 않으니
 각자 자기 키를 넣어야 한다. 공용 컴퓨터에서는 넣지 마라.
@@ -69,3 +73,9 @@
 
 단일 자족 HTML 한 장. 바깥에서 받아오는 것은 없다(AI를 켰을 때의 모델 호출만
 예외). 소스와 시험 도구는 비공개 저장소에 있다.
+
+## 권한
+
+SPUM 해커톤 출품작. **SPUM Unified Commercial License (Creator Pro)** 아래,
+순순프로젝트로부터 권한을 위임받아 만들었다.
+권한 화면 → https://spum.soonsoon.ai/dashboard.html#dashboard-permissions
