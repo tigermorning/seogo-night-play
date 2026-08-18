@@ -302,6 +302,10 @@ const NPCS=[
       none:'아무도 못 봤소. 초소는 조용했소.',
       empty:(sp,r)=>sp+' '+r+'은 비어 있었소.',
       nada:w=>EUN(w)+' 내 알 바가 아니오.',
+      sawSelf:'내 눈으로 봤소.',
+      fromWho:w=>'그건 '+w+'에게 들은 얘기요.',
+      blurSrc:'…들은 얘기요. 누구였는지는 기억에 없소.',
+      whatSrc:'무엇을 두고 묻는 것이오?',
       sure:'확실하오. 내가 본 것이오.',
       likely:'…그렇게 기억하오.',
       unsure:'…확실치 않소. 똑똑히 보지는 못했소.',
@@ -376,6 +380,10 @@ const NPCS=[
       none:'아무도… 못 봤어요.',
       empty:(sp,r)=>sp+' '+r+'엔 아무도 없었어요.',
       nada:w=>EUN(w)+'… 저는 잘 몰라요.',
+      sawSelf:'제 눈으로… 봤어요.',
+      fromWho:w=>'그건… '+w+'에게 들은 얘기예요.',
+      blurSrc:'…들은 얘기예요. 누구였는지는 잘…',
+      whatSrc:'저… 무엇을 말씀하시는 거예요?',
       sure:'네… 그건 확실해요.',
       likely:'…그랬던 것 같아요.',
       unsure:'…잘 모르겠어요. 확실친 않아요.',
@@ -450,6 +458,10 @@ const NPCS=[
       none:'글쎄요, 본 사람은 없습니다.',
       empty:(sp,r)=>sp+' '+r+'엔 아무도 없었지요.',
       nada:w=>EUN(w)+' 제가 보탤 게 없군요.',
+      sawSelf:'제 눈으로 봤습니다.',
+      fromWho:w=>'그건 '+w+'에게 들은 얘기지요.',
+      blurSrc:'…들은 얘깁니다. 누구였는지는 글쎄요.',
+      whatSrc:'허, 무엇을 두고 하시는 말씀입니까?',
       sure:'확실합니다. 이 나이에 헛말은 안 하지요.',
       likely:'뭐, 그렇게 기억합니다만.',
       unsure:'글쎄요. 장담은 못 하겠군요.',
@@ -525,6 +537,10 @@ const NPCS=[
       none:'본 사람 없다.',
       empty:(sp,r)=>sp+' '+r+'. 아무도 없었다.',
       nada:w=>EUN(w)+' 모른다.',
+      sawSelf:'내가 봤다.',
+      fromWho:w=>w+'에게 들었다.',
+      blurSrc:'들었다. 누군지는 모른다.',
+      whatSrc:'무엇을 두고 묻는가.',
       sure:'확실하다.',
       likely:'그렇게 기억한다.',
       unsure:'확실하지 않다.',
@@ -599,6 +615,10 @@ const NPCS=[
       none:'아무도 못 봤어요!',
       empty:(sp,r)=>sp+' '+r+'엔 아무도 없었어요!',
       nada:w=>EUN(w)+'요? 그건 모르겠어요.',
+      sawSelf:'제가 봤어요!',
+      fromWho:w=>w+'한테 들었어요!',
+      blurSrc:'어… 들은 거예요! 누구한테 들었는지는… 기억이 잘…',
+      whatSrc:'어? 뭘 말하는 거예요?',
       sure:'네! 그건 확실해요!',
       likely:'아마… 그랬던 것 같아요!',
       unsure:'어… 그건 잘 모르겠어요.',
@@ -918,6 +938,9 @@ const RE={
      안심으로 읽혀 신뢰가 거꾸로 오르던 자리다. 안심의 뜻이 분명한 꼴만 남긴다. */
   reassure:/괜찮|안심|걱정 마|걱정하지|해치지|도와|편하게|천천히|겁내|미안|사과|진정|편히|무섭|두려|보호|믿어도|믿으셔도|나를 믿|날 믿/,
   // 불신은 압박이다 — "믿을 수 없소" 가 아무 갈래에도 안 걸려 죽던 자리
+  /* 출처 확인 — 직전 답이 직접 본 것인지 들은 것인지 묻는다.
+     전언과 목격을 가르는 것은 추리에 직접 쓰인다(심어진 기억·공범의 거짓 증언). */
+  source:/직접\s*(?:봤|본|보셨|보았)|들은\s*(?:얘기|이야기|것|말|건)|누구(?:한테|에게|께서?)\s*들|전해\s*들|어떻게\s*알(?:았|았소|았나|았습|게)|누가\s*그러|남의?\s*얘기/,
   /* 재확인 — 새 사실을 묻지 않고 직전 답의 확신도를 묻는다.
      압박 표지(거짓·숨기다 등)는 press 가 먼저 잡는다. 같은 뜻이어도 강도가 다르면 다른 반응이 옳다. */
   confirm:/확실|틀림없|틀림 없|분명하|분명한가|분명합|분명해|분명히\s*[가-힣]{0,3}(?:소|나요|습니까|어요|니|냐)|정말이|정말인가|정말입|정말요|정말(?=[가-힣\s]{0,6}[?？])|참말|진짜(?:요|입|인가|예요|에요)|사실이(?:오|냐|죠|에요|예요|ㅂ니까)/,
@@ -960,7 +983,7 @@ const ACTKO={ASK_WHEREABOUTS:'행적 질문',ASK_SIGHTING:'목격 질문',ASK_AB
 const OBLIG={GREET:'ack',SOCIAL:'ack',UNKNOWN:'ack',HYPOTHETICAL:'ack',REMARK:'ack',OPINION:'ack',
              ASK_WHEREABOUTS:'answer',ASK_SIGHTING:'answer',ASK_ABOUT:'answer',ASK_ROOM:'answer',
              FOLLOW_UP:'answer',ASK_SUSPECT:'answer',PRESENT:'react',PRESS:'react',REASSURE:'react',
-             ASK_CONFIRM:'react'};
+             ASK_CONFIRM:'react',ASK_SOURCE:'react'};
 const mayRetrieve=act=>OBLIG[act]==='answer';
 /* 왜 못 알아들었는지 — 셈이 아니라 사람에게 할 말로 남긴다 */
 function whyMiss(f){
@@ -1145,6 +1168,7 @@ function parse(text,ignoreSocial,selfId){
   // "카일이 당신을 봤다던데" — 인용이 나를 가리키면 들이대는 말이다
   else if(RE.quote.test(s))    act=(room||you)?'PRESENT':(subj?'ASK_ABOUT':'UNKNOWN');
   else if(RE.press.test(s))    act='PRESS';
+  else if(RE.source.test(s))   act='ASK_SOURCE';
   // 재확인은 대상이 직전 답이다. 개체가 실려 있으면 그건 새 질문이다.
   else if(RE.confirm.test(s)&&!hours.length&&!rooms.length&&!person&&!subj&&!you) act='ASK_CONFIRM';
   else if(sight)               act=person?'ASK_ABOUT':(room?'ASK_ROOM':'ASK_SIGHTING');
@@ -1347,6 +1371,7 @@ function planTurn(id,Q,keep,corr,kind){
 function realize(id,Q,plan){
   const v=N[id].v, t=N[id].t, out=[];
   G.ctx[id].lastConf=null;                 // 재확인이 읽는다 — 방금 말한 것을 얼마나 믿는가
+  G.ctx[id].lastRows=[];                   // 출처 확인이 읽는다 — 그 말의 근거가 무엇인가
   G.approvedBy=G.approvedBy||{};
   G.approved={npc:id, act:Q.act, answer_type:Q.answer_type||null, refuse:plan.refuse?plan.refuse.kind:null,
     facts:plan.groups.map(({g,kind})=>({kind, hours:g.hours.map(h=>HOURS[h]), room:RKO[g.room],
@@ -1379,6 +1404,7 @@ function realize(id,Q,plan){
     if(cf<.34){ out.push(v.blank(spanSaw(g.hours))); return }
     if(cf<.66){ G.vague+=g.rows.length; out.push(v.hazy(spanSaw(g.hours),RKO[g.room])); return }
     const blur=r=>!!(t.blurSource&&r.told);
+    G.ctx[id].lastRows=G.ctx[id].lastRows.concat(g.rows);
     g.rows.forEach(r=>{
       addCard({kind:'saw',subject:r.subject,room:r.room,hour:r.hour,by:id,
         mark:r.told&&!blur(r)?'·':'○',conf:cf,told:r.told,blurred:blur(r)});
@@ -1600,7 +1626,7 @@ const INTERP_SCHEMA={type:'object',additionalProperties:false,
   properties:{
     acts:{type:'array',items:{type:'string',enum:['GREET','SOCIAL','REMARK','HYPOTHETICAL','OPINION',
       'ASK_WHEREABOUTS','ASK_SIGHTING','ASK_ROOM','ASK_ABOUT','FOLLOW_UP','PRESENT','PRESS','REASSURE',
-      'ASK_CONFIRM','UNKNOWN']}},
+      'ASK_CONFIRM','ASK_SOURCE','UNKNOWN']}},
     answer_type:{type:'string',enum:['where','who','when','timerange','why','activity','relation','confirm','none']},
     case_relevance:{type:'number'},
     social_draft:{type:'string'},
@@ -1686,6 +1712,8 @@ const LLM = {
 '  "ASK_CONFIRM" 은 새 사실을 묻지 않고 **직전 답이 확실한지** 되묻는 것이다 — "확실하오?" "틀림없소?" "정말이오?".',
 '  거짓·숨김을 들이대며 몰아붙이는 말("거짓말 아니오?" "숨기는 게 있소")은 ASK_CONFIRM 이 아니라 PRESS 다.',
 '  시각·장소·사람이 실려 있으면 재확인이 아니라 그 개체에 대한 질문이다("23시에 벤을 봤소?" → ASK_SIGHTING).',
+'  "ASK_SOURCE" 는 직전 답이 **직접 본 것인지 들은 것인지** 묻는 것이다 — "직접 봤소?" "누구한테 들었소?" "어떻게 알았소?" "들은 얘기요?".',
+'  "누구를 봤소?" 는 ASK_SOURCE 가 아니라 ASK_SIGHTING 이다. 출처를 묻는 것과 목격을 묻는 것은 다르다.',
 'answer_type: "where"|"who"|"when"|"timerange"|"why"|"activity"|"relation"|"confirm"|"none"',
 '  "뭘 했나요/뭐 하고 있었나요" 처럼 한 일을 묻는 것은 activity 다.',
 'case_relevance: 어젯밤 서고 도난 사건(행적·목격·시각·장소)을 실제로 묻는가. 0.0~1.0.',
@@ -2111,6 +2139,7 @@ function chargePatience(id,Q){
   G.pat[id]=Math.max(0,G.pat[id]+(Q.act==='PRESS'?COST_PUSH*(t.pressMult||1)
     :Q.act==='PRESENT'?COST_PUSH:Q.act==='REASSURE'?-12
     :Q.act==='ASK_CONFIRM'?COST_ASK*(t.pressMult||1)      // 재확인도 압박이다. 미라는 약하고 도른은 끄떡없다
+    :Q.act==='ASK_SOURCE'?COST_ASK                        // 출처를 묻는 건 압박이 아니다 — 확인이다
     :COST_ASK));
 }
 
@@ -2126,6 +2155,27 @@ function reactTurn(id,Q,f){
   const c=N[id], v=c.v, t=c.t;
   /* 재확인 — 새 사실을 내주지 않는다. 방금 말한 것을 얼마나 믿는지만 밝힌다.
      확신도 구간은 realize 가 대사를 고를 때 쓰는 것과 같다(.34 / .66). */
+  /* 출처 확인 — 새 사실을 내주지 않고 그 말의 출처만 밝힌다.
+     흐리는 성격(벤)은 「들었다」까지만 인정하고 누구인지는 못 댄다.
+     드러난 전언은 증언판에서도 전언으로 다시 적힌다 — 물어본 값이 판에 남아야 한다. */
+  if(Q.act==='ASK_SOURCE'){
+    const rows=G.ctx[id].lastRows||[];
+    if(!rows.length){ voice(id,v.whatSrc); renderAll(); return true }
+    const told=rows.filter(r=>r.told);
+    if(!told.length) voice(id,v.sawSelf);
+    else if(t.blurSource) voice(id,v.blurSrc);
+    else voice(id,v.fromWho(told[0].told));
+    if(told.length){                                    // 전언임이 드러났다
+      let n=0;
+      G.cards.forEach(x=>{ if(x.by!==id||x.kind!=='saw')return;
+        if(!told.some(r=>r.subject===x.subject&&r.hour===x.hour&&r.room===x.room))return;
+        if(x.mark==='·'&&x.told)return;
+        x.mark='·'; x.told=x.told||told[0].told; x.blurred=false; n++; });
+      if(n) say('sys',null,'증언판: '+NK[id]+'의 증언 '+n+'개가 전해 들은 것으로 고쳐졌다.');
+      remember(id,'출처','들은 얘기임을 인정했다');
+    } else remember(id,'출처','직접 본 것임을 확인했다');
+    spend(); renderAll(); return true;
+  }
   if(Q.act==='ASK_CONFIRM'){
     const cf=G.ctx[id].lastConf;
     if(cf==null){ voice(id,v.whatSure); renderAll(); return true }   // 아직 아무 사실도 말하지 않았다
