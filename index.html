@@ -1,10 +1,3 @@
-<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="어젯밤 성의 서고에서 기밀 문서가 사라졌다. 다섯 사람 중 하나가 첩자다. 심문으로 첩자를 가려내는 추리 게임.">
-<meta name="color-scheme" content="dark">
 <title>서고의 밤</title>
 <style>
 :root{
@@ -171,8 +164,6 @@ details.notes .nb b{color:var(--text)}
   @keyframes in{from{opacity:0; transform:translateY(3px)}to{opacity:1; transform:none}}
 }
 </style>
-</head>
-<body>
 
 <header>
   <div class="brand">
@@ -302,6 +293,7 @@ const NPCS=[
   reason:{"distrust": "지난달 은식기가 사라졌을 때 나는 미라를 지목했소. 아직 거두지 않았소.", "hearsay": "들은 얘기만 믿고 사람을 잡을 뻔한 적이 있소. 두 번은 안 하오.", "scope": "나는 어젯밤 일만 답하겠소."},
   t:{noHearsay:true, pressMult:2.2, withhold:'mira'},
   night:['gate','gate','court','gate','gate','quarters'],
+  hide:'quarters',   // 초소를 비우고 눈을 붙인 곳
   secret:'초소를 비우고 잠깐 눈을 붙였소. 밝혀지면 목이 날아가오.',
   v:{ loc:(sp,r)=>sp+' '+r+'에 있었소.',
       saw:(sp,r,w)=>sp+' '+r+'에서 '+EUL(w)+' 봤소.',
@@ -371,7 +363,8 @@ const NPCS=[
   reason:{"calm": "그때 아무도 제 말을 믿어 주지 않았어요. 그래서 무서워요.", "scope": "저는 어젯밤 일밖엔 아는 게 없어요."},
   t:{pressMult:2.6, reassurable:true, pressBlocks:true},
   night:['kitchen','kitchen','yard','yard','kitchen','quarters'],
-  secret:'뒷마당에서… 사람을 만나고 있었어요. 문서와는 아무 상관 없어요.',
+  hide:'yard',       // 뒷마당 밀회
+  secret:'사람을… 만나고 있었어요. 문서와는 아무 상관 없어요.',
   v:{ loc:(sp,r)=>sp+'… '+r+'에 있었어요.',
       saw:(sp,r,w)=>sp+' '+r+'에서 '+EUL(w)+' 봤어요.',
       hazy:(sp,r)=>sp+'… '+r+'에 누가 있었는데, 누군지는 잘…',
@@ -440,6 +433,7 @@ const NPCS=[
   reason:{"scope": "제가 아는 건 어젯밤 일뿐입니다."},
   t:{pressMult:.5, deflect:true},
   night:['quarters','kitchen','quarters','quarters','quarters','quarters'],
+  hide:'kitchen',    // 뒷문으로 물건을 들이고 냈다 — 인물 카드의 「물건을 들이고 냅니다」
   secret:'금지된 물건을 좀 옮겼지요. 문서와는 상관없는 장사입니다.',
   v:{ loc:(sp,r)=>sp+' '+r+'에 있었지요.',
       saw:(sp,r,w)=>sp+' '+r+'에서 '+EUL(w)+' 봤지요.',
@@ -510,6 +504,7 @@ const NPCS=[
   reason:{"sharp": "부엌 종을 세며 일한다. 시각은 틀리지 않는다.", "scope": "나는 어젯밤 일만 안다."},
   t:{sharp:true},
   night:['kitchen','kitchen','kitchen','kitchen','quarters','quarters'],
+  hide:'quarters',   // 빼돌린 것을 숨긴 곳
   secret:'식료품을 좀 빼돌렸다. 그뿐이다.',
   v:{ loc:(sp,r)=>sp+' '+r+'.',
       saw:(sp,r,w)=>sp+' '+r+'. '+IGA(w)+' 있었다.',
@@ -579,6 +574,7 @@ const NPCS=[
   reason:{"blur": "그때 본 걸 말 안 했다가 두고두고 후회했어요. 이제는 들은 것도 다 말해요.", "scope": "저야 어젯밤 일이면 다 말해요!"},
   t:{blurSource:true, chatty:true, pressMult:.4},
   night:['yard','court','court','kitchen','court','quarters'],
+  hide:'gate',       // 성문으로 빠져나갔다
   secret:'말을 몰래 타고 성 밖으로 나갔어요! 아무한테도 말하지 마세요!',
   v:{ loc:(sp,r)=>sp+' '+r+'에 있었어요!',
       saw:(sp,r,w)=>sp+' '+r+'에서 '+EUL(w)+' 봤어요!',
@@ -657,9 +653,12 @@ function newCase(){
   truth[spy][theft]='archive'; truth[spy][theft-1]='court';
   const [W,R,B,C]=shuf(NPCS.map(n=>n.id).filter(i=>i!==spy));
   truth[W][theft-1]='court';
-  const hPool=[1,2,3,4].filter(t=>t!==theft&&t!==theft-1&&base[R][t]!=='yard');
-  const hTick=rnd(hPool.length?hPool:[1,2,3,4].filter(t=>t!==theft&&t!==theft-1));
-  truth[R][hTick]='yard'; truth[B][hTick]='yard';
+  /* 무관한 거짓말 — 숨기는 방은 그 사람의 죄가 정한다(`hide`).
+     기본 동선이 이미 그 방이면 숨길 것이 없으므로 그 시각은 뺀다. */
+  const hRoom=N[R].hide;
+  const hPool=[1,2,3,4].filter(t=>t!==theft&&t!==theft-1&&base[R][t]!==hRoom);
+  const hTick=rnd(hPool.length?hPool:[1,2,3,4].filter(t=>t!==theft&&t!==theft-1&&base[R][t]!==hRoom));
+  truth[R][hTick]=hRoom; truth[B][hTick]=hRoom;
   const framed=rnd([W,R,B]);
   const bad=new Set([truth[C][theft],truth[framed][theft]]);
   const iRoom=['court','archive','kitchen','yard','gate'].find(r=>!bad.has(r));
@@ -701,7 +700,7 @@ function newCase(){
 
   // 같은 객체를 가리켜야 한다 — 사본을 두면 무너뜨린 표시가 한쪽에만 남는다
   const recruits=accomplice?[Object.assign(accomplice,{at:0,folded:false})]:[];
-  G={spy,theft,W,R,B,C,A,accomplice,recruits,framed,iRoom,hTick,truth,base,rows,hidden,
+  G={spy,theft,W,R,B,C,A,accomplice,recruits,framed,iRoom,hTick,hRoom,truth,base,rows,hidden,
      tick:0,beats:BEATS,sel:null,cards:[],vague:0,pat:{},pushed:{},reassured:{},
      ctx:{},rel:{},toldSecret:{},implantVoid:false,over:false,log:[],feed:[],parse:null,miss:0,
      turnNo:0,lastQ:null,misses:[],utter:'',hist:{},group:null,hereRoom:null};
@@ -1057,7 +1056,11 @@ function address(text){
   /* ③ 이름 없이 "두 분" 처럼 여럿을 부르면, 지금 그 자리에 있는 사람들을 부른 것이다.
         장면이 이미 답을 쥐고 있다 — "여기" 를 푸는 것과 같은 규칙이다. */
   const plural=!called.length&&PLURAL.test(body);
-  return {called:[...new Set(called)], body:body||String(text||''), hailed, plural};
+  /* ④ 걷어내고 남은 것이 없으면 이 발화는 부르는 말 하나였다.
+        여기서 원문으로 되돌리면 호격의 물음표가 「이어 묻기」로 읽힌다 —
+        "미라 씨?" 한 마디에 밤의 행적이 쏟아지던 자리다. */
+  const bare=!body.replace(/[\s.?!…,·~]/g,'');
+  return {called:[...new Set(called)], body:body||String(text||''), hailed, plural, bare};
 }
 
 /* ═══════════ ① 해석 ═══════════
@@ -1742,7 +1745,8 @@ function interpret(id,text){
      "그렇다면 21시부터 02시까지 어디에 계셨는지 시간대별로" 가
      '가정' 한 글자에 지워지던 자리다. */
   const strong=(fCase.hours&&fCase.hours.length)||(fCase.rooms&&fCase.rooms.length)||!!fCase.answer_type;
-  const caseful = (soc==='HYPOTHETICAL'&&!strong) ? false
+  const caseful = A.bare ? false                 // 부르는 말뿐이면 묻는 것이 없다
+                : (soc==='HYPOTHETICAL'&&!strong) ? false
                 // 관계를 묻는 말이 "이어 묻기" 로 둔갑하면 엉뚱한 목격담이 나온다.
                 // 사교 표지가 뚜렷한데 사건 쪽 근거가 이어받기뿐이면 사교가 뜻이다.
                 : ((soc==='REMARK'||soc==='OPINION')&&(fCase.weak||fCase.act==='FOLLOW_UP')) ? false
@@ -2073,6 +2077,13 @@ function chargePatience(id,Q){
     :Q.act==='PRESENT'?COST_PUSH:Q.act==='REASSURE'?-12:COST_ASK));
 }
 
+/* 감추던 것을 털어놓는 말. **사실은 이 판에서 만들고, 사유만 인물에서 가져온다.**
+   비밀 문장을 그대로 읊으면 그 판의 시각·방을 설명하지 못한다(80% 어긋났던 자리). */
+function tellSecret(id){
+  const c=N[id], v=c.v;
+  return v.admit(v.loc(HOURS[G.hTick]+'엔', RKO[G.hRoom])+' '+c.secret);
+}
+
 /* 반응 — 답이 아니라 반응이다. 다독임·추궁·들이대기는 기억을 검색하지 않는다. */
 function reactTurn(id,Q,f){
   const c=N[id], v=c.v, t=c.t;
@@ -2081,7 +2092,7 @@ function reactTurn(id,Q,f){
     if(t.reassurable&&G.reassured[id]>=2&&!G.toldSecret[id]){
       G.toldSecret[id]=true;
       remember(id,'고백','다독임 끝에 감추던 것을 털어놓았다');
-      if(id===G.R){ voice(id,v.admit(c.secret));
+      if(id===G.R){ voice(id,tellSecret(id));
         G.cards.filter(x=>x.subject===G.R&&x.hour===G.hTick).forEach(x=>x.settled=true);
         say('sys',null,'증언판: '+HOURS[G.hTick]+' '+NK[G.R]+'의 행적이 해명됐다.');
       } else {
@@ -2218,8 +2229,8 @@ function present(id,Q){
     } else { voice(id,v.lock); G.pat[id]+=12 }
     return;
   }
-  if(id===G.R&&subj===id&&hr===G.hTick&&Q.room==='yard'){
-    voice(id,v.admit(c.secret)); G.toldSecret[id]=true;
+  if(id===G.R&&subj===id&&hr===G.hTick&&Q.room===G.hRoom){
+    voice(id,tellSecret(id)); G.toldSecret[id]=true;
     remember(id,'고백','행적을 짚자 감추던 것을 털어놓았다');
     G.cards.filter(x=>x.subject===G.R&&x.hour===G.hTick).forEach(x=>x.settled=true);
     say('sys',null,'증언판: '+HOURS[G.hTick]+' '+NK[G.R]+'의 행적이 해명됐다.');
@@ -2506,9 +2517,9 @@ function end(win,why){
   const line=(t,id,d)=>{const e=el('div'); e.innerHTML='<b>'+NK[id]+'</b> — '+t+' · '+d; rl.appendChild(e)};
   line('첩자',G.spy,HOURS[G.theft]+'에 서고에 있었고 '+HOURS[G.theft-1]+'엔 안뜰을 지났다. '+RKO[G.base[G.spy][G.theft-1]]+'에 있었다고 거짓말했다.');
   line('목격자',G.W,HOURS[G.theft-1]+' 안뜰에서 첩자를 봤다. 이 증언이 정답이었다.');
-  line('무관한 거짓말',G.R,HOURS[G.hTick]+' 뒷마당. 거짓말했지만 첩자가 아니다.');
+  line('무관한 거짓말',G.R,HOURS[G.hTick]+' '+RKO[G.hRoom]+'. 거짓말했지만 첩자가 아니다.');
   line('심어진 기억',G.C,'첩자가 심은 거짓 기억으로 '+EUL(NK[G.framed])+' '+RKO[G.iRoom]+'에서 봤다고 믿었다. 본인은 '+RKO[G.truth[G.C][G.theft]]+'에 있었으므로 볼 수 없었다.');
-  line('목격자(무관)',G.B,'뒷마당에서 '+EUL(NK[G.R])+' 봤다.');
+  line('목격자(무관)',G.B,RKO[G.hRoom]+'에서 '+EUL(NK[G.R])+' 봤다.');
   (G.recruits||[]).forEach(ac=>line(ac.at?'낮에 포섭된 공범':'포섭된 공범',ac.who,
     (ac.at?'오늘 '+(10+ac.at)+'시에 '+RKO[posNow(ac.who)]+'에서 포섭됐다. ':'')+
     HOURS[ac.hour]+'에 '+RKO[ac.room]+'에서 '+EUL(NK[G.spy])+' 봤다고 거짓말한다. '+
@@ -2714,7 +2725,9 @@ function openAI(){
   const mi=row('모델',mk(cur.model),'예: claude-opus-5 · claude-sonnet-5 · claude-haiku-4-5');
   const ei=row('엔드포인트',mk(cur.endpoint),'OpenAI 호환일 때만. 예: https://sam.soonsoon.ai/v1');
   const ki=row('키',mk(cur.key),'이 브라우저에만 저장된다. 공용 컴퓨터에서는 넣지 마라. '+
-    '공유 링크 사본에서는 바깥 연결이 막혀 있어 AI가 켜지지 않는다 — 원본 HTML 파일로 열어야 한다.');
+    'Claude·OpenAI 호환은 공개 링크 사본에서도 켜진다. '+
+    '로컬 올라마는 이 컴퓨터에서 열었을 때만 닿는다 — 공개 링크에서는 안 된다. '+
+    '아티팩트 사본은 바깥 연결이 막혀 있어 어느 쪽도 켜지지 않는다.');
   ki.type='password';
   m.appendChild(b);
   const f=el('div','mf');
@@ -2755,6 +2768,3 @@ document.getElementById('aibtn').onclick=openAI;
 document.getElementById('scrim').onclick=e=>{ if(e.target.id==='scrim'&&!G.over) document.getElementById('scrim').hidden=true };
 start();
 </script>
-
-</body>
-</html>
